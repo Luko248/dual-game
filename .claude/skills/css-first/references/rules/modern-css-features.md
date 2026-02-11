@@ -690,6 +690,45 @@ MDN: [scrollbar-gutter](https://developer.mozilla.org/en-US/docs/Web/CSS/scrollb
 
 ---
 
+### 3D Transforms (2022)
+
+#### ✅ perspective + preserve-3d
+**Status**: 🟢 Widely Available
+
+```css
+/* 3D scene setup */
+.scene { perspective: 800px; }
+
+.cube {
+  transform-style: preserve-3d;
+}
+
+.cube__face {
+  backface-visibility: hidden;
+  rotate: y 90deg;
+  translate: 0 0 var(--half);
+}
+
+/* 3D carousel — items in a circle */
+.carousel {
+  --items: 6;
+  --radius: calc(var(--item-size) / 2 / tan(180deg / var(--items)));
+}
+
+.carousel__item {
+  rotate: y calc(360deg / var(--items) * var(--i));
+  translate: 0 0 var(--radius);
+}
+```
+
+**3D property chain**: `perspective` (parent) → `transform-style: preserve-3d` (container) → `backface-visibility: hidden` (faces) → `rotate` / `translate` (positioning).
+
+**Flattening gotchas**: `overflow: hidden`, `opacity < 1`, `filter`, `contain: paint`, `clip-path`, `mask` on a `preserve-3d` element will BREAK 3D. Use `overflow: clip` instead.
+
+**Use instead of**: WebGL / JavaScript animation libraries for 3D UI effects (cubes, carousels, card flips, tilt effects)
+
+---
+
 ### Responsive (2024-2025)
 
 #### ✅ Scroll State Queries (2025)
@@ -708,6 +747,56 @@ MDN: [scrollbar-gutter](https://developer.mozilla.org/en-US/docs/Web/CSS/scrollb
 ```
 
 **Use instead of**: JavaScript IntersectionObserver for sticky/snap detection
+
+---
+
+### Accessibility (2020+)
+
+#### ✅ prefers-reduced-motion (MANDATORY)
+**Status**: 🟢 Widely Available
+
+**Rule**: Every animation, transition, and scroll effect MUST have a `prefers-reduced-motion: reduce` override. This is not optional — it is a WCAG 2.1 AA requirement.
+
+```css
+/* ❌ WRONG — animation with no motion preference check */
+.card {
+  animation: slide-in 0.5s ease;
+}
+
+/* ✅ CORRECT — motion-safe approach (opt-in) */
+.card {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    animation: slide-in 0.5s ease;
+  }
+}
+
+/* ✅ ALSO CORRECT — opt-out approach */
+.card {
+  animation: slide-in 0.5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+}
+
+/* Smooth scroll — ALWAYS gate behind motion preference */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+```
+
+**Apply to**: All `animation`, `transition`, `scroll-behavior: smooth`, view transitions, scroll-driven animations, `@starting-style` entry effects, 3D rotations, parallax
+
+**Related queries**:
+- `prefers-contrast: more | less` — high/low contrast needs (🟢)
+- `prefers-reduced-transparency: reduce` — solid backgrounds over glass effects (🔵)
+- `forced-colors: active` — Windows High Contrast mode, use system colors (🟢)
 
 ---
 
@@ -773,6 +862,8 @@ Replace these old patterns with modern alternatives:
 | JS mouseenter/leave for tooltips | `interestfor` + `interest-delay` | 🟣 |
 | `line-height: 1` text centering | `text-box: trim-both cap alphabetic` | 🟡 |
 | `width: 100%` + margin overflow | `inline-size: stretch` | 🟡 |
+| Animations without motion check | `prefers-reduced-motion: reduce` override | 🟢 |
+| `overflow: hidden` for glassmorphism | `prefers-reduced-transparency: reduce` solid fallback | 🔵 |
 
 ---
 
@@ -787,6 +878,9 @@ Before suggesting CSS, ask:
 - [ ] Am I using scroll-driven animations instead of JavaScript?
 - [ ] Am I using `:has()` for parent/sibling selectors?
 - [ ] Have I checked the baseline status?
+- [ ] Does every animation/transition have a `prefers-reduced-motion` override?
+- [ ] Do glass/transparency effects have a `prefers-reduced-transparency` fallback?
+- [ ] Does the design work in `forced-colors` mode?
 
 ---
 

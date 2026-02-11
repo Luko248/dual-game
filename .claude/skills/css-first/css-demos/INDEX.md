@@ -191,6 +191,20 @@ All CSS demos are organized by category with direct MDN links, baseline status, 
 - Task: Show popovers on hover/focus without JavaScript
 - Features: `interestfor` attribute, `popover="hint"`, `interest-delay`, `:interest-target`, link previews, mega-menu, anchor positioning
 
+### [flip-card.css](interaction/flip-card.css)
+**Flip Card / 3D Tile — backface-visibility**
+- Baseline: 🟢 Widely Available (97%)
+- MDN: [backface-visibility](https://developer.mozilla.org/en-US/docs/Web/CSS/backface-visibility), [transform-style](https://developer.mozilla.org/en-US/docs/Web/CSS/transform-style), [perspective](https://developer.mozilla.org/en-US/docs/Web/CSS/perspective)
+- Task: Create flip cards, 3D tiles, and reveal-on-hover UI patterns
+- Features: `backface-visibility: hidden`, `transform-style: preserve-3d`, `perspective`, horizontal/vertical flip, product tiles, team cards, keyboard accessible, `prefers-reduced-motion`
+
+### [perspective-3d.css](interaction/perspective-3d.css)
+**CSS 3D Transforms & Perspective**
+- Baseline: 🟢 Widely Available (97%)
+- MDN: [perspective](https://developer.mozilla.org/en-US/docs/Web/CSS/perspective), [transform-style](https://developer.mozilla.org/en-US/docs/Web/CSS/transform-style)
+- Task: Build 3D scenes — cubes, carousels, rotating forms, tilt effects
+- Features: CSS cube construction, face navigation via `:target`, form-on-cube, 3D carousel, tilt-on-hover, isometric scene with floor, text ring, scroll-driven 3D rotation, perspective guide, 3D flattening gotchas
+
 ### [popover.css](interaction/popover.css)
 **Popover API with CSS**
 - Baseline: 🔵 Newly Available (91%)
@@ -367,6 +381,17 @@ All CSS demos are organized by category with direct MDN links, baseline status, 
 - MDN: [@scope](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@scope)
 - Task: Scope styles to DOM subtrees and control specificity with proximity
 - Features: Scope root/limit (donut scope), `:scope` pseudo-class, scoping proximity, low-specificity selectors, scope + nesting
+
+---
+
+## Accessibility
+
+### [prefers-reduced-motion.css](accessibility/prefers-reduced-motion.css)
+**Accessibility Media Queries — Reduced Motion, Contrast, Transparency**
+- Baseline: 🟢 Widely Available (97%+)
+- MDN: [prefers-reduced-motion](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion), [prefers-contrast](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-contrast), [prefers-reduced-transparency](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-transparency), [forced-colors](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/forced-colors)
+- Task: Respect user accessibility preferences — disable decorative motion, adapt contrast, handle transparency and forced colors
+- Features: Global animation reset, targeted per-component control, motion-safe opt-in pattern, scroll-behavior gating, view transition disable, essential vs decorative motion guide, `prefers-contrast`, `prefers-reduced-transparency`, `forced-colors`, all accessibility queries reference
 
 ---
 

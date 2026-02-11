@@ -47,6 +47,7 @@ All behavior rules are documented in `references/rules/`:
 | Framework Awareness      | [`references/rules/framework-awareness.md`](references/rules/framework-awareness.md)                     | Auto-detect and adapt to project frameworks    |
 | Browser Support          | [`references/rules/browser-support-consideration.md`](references/rules/browser-support-consideration.md) | Always provide baseline status indicators      |
 | Progressive Enhancement  | [`references/rules/progressive-enhancement.md`](references/rules/progressive-enhancement.md)             | Core functionality first, enhancements on top  |
+| Browser Verification     | [`references/rules/browser-verification.md`](references/rules/browser-verification.md)                   | Use MCP servers / browser hooks to verify CSS  |
 
 ## CSS Demos
 
@@ -86,6 +87,8 @@ Production-ready CSS examples organized by category. See [`css-demos/INDEX.md`](
 | Tooltips                 | Anchor Positioning              | `css-demos/positioning/anchor-positioning.css`         |
 | Carousel / Slider        | CSS Carousel                    | `css-demos/interaction/css-carousel.css`               |
 | Tabs / Scroll spy        | CSS Carousel                    | `css-demos/interaction/css-carousel.css`               |
+| Flip card / 3D tile      | `backface-visibility`           | `css-demos/interaction/flip-card.css`                  |
+| 3D scenes / Cubes        | `perspective` + `preserve-3d`   | `css-demos/interaction/perspective-3d.css`              |
 | Popovers / Dropdowns     | Popover API                     | `css-demos/interaction/popover.css`                    |
 | Hover tooltips (no JS)   | Interest Invokers               | `css-demos/interaction/interest-invokers.css`          |
 | Touch vs pointer         | Hover media queries             | `css-demos/interaction/hover-media-queries.css`        |
@@ -111,6 +114,9 @@ Production-ready CSS examples organized by category. See [`css-demos/INDEX.md`](
 | Cascade control          | `@layer`                        | `css-demos/specificity/cascade-layers.css`             |
 | Scoped styles            | `@scope`                        | `css-demos/specificity/scope-rule.css`                 |
 | Custom select styling    | `appearance: base-select`       | `css-demos/native-customization/customizable-select.css` |
+| Reduced motion           | `prefers-reduced-motion`        | `css-demos/accessibility/prefers-reduced-motion.css`     |
+| High contrast            | `prefers-contrast`              | `css-demos/accessibility/prefers-reduced-motion.css`     |
+| Forced colors (Win HC)   | `forced-colors`                 | `css-demos/accessibility/prefers-reduced-motion.css`     |
 
 ## See Also
 
