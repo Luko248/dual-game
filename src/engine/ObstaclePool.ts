@@ -33,11 +33,11 @@ export class ObstaclePool {
   }
 
   gap(dist: number): number {
-    return Math.max(GAP_MIN, GAP_INITIAL - dist * GAP_SHRINK);
+    return Math.max(GAP_MIN, GAP_INITIAL - Math.sqrt(dist) * GAP_SHRINK);
   }
 
   spacing(dist: number): number {
-    return Math.max(SPACING_MIN, SPACING_INITIAL - dist * SPACING_SHRINK);
+    return Math.max(SPACING_MIN, SPACING_INITIAL - Math.sqrt(dist) * SPACING_SHRINK);
   }
 
   spawn(y: number, dist: number): void {
@@ -46,7 +46,7 @@ export class ObstaclePool {
 
     const leftGapX = Phaser.Math.Between(m, HALF - m);
     const mirror = W - leftGapX;
-    const maxOff = Math.min((gap - 2 * DOT_R) * 0.7, 3 + dist * OFFSET_GROWTH);
+    const maxOff = Math.min((gap - 2 * DOT_R) * 0.7, 3 + Math.sqrt(dist) * OFFSET_GROWTH);
     const offset = (Math.random() * 2 - 1) * maxOff;
     const rightGapX = Phaser.Math.Clamp(mirror + offset, HALF + m, W - m);
 

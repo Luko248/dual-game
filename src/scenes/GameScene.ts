@@ -182,7 +182,7 @@ export class GameScene extends Phaser.Scene {
     if (this.rightTrail.length > TRAIL_LEN) this.rightTrail.shift();
 
     /* -- scroll -- */
-    this.speed = SPEED_INITIAL + this.dist * SPEED_GROWTH;
+    this.speed = SPEED_INITIAL + Math.sqrt(this.dist) * SPEED_GROWTH;
     const scroll = this.speed * dt;
     this.dist += scroll;
     this.pool.scroll(scroll, this.dist);

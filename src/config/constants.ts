@@ -18,10 +18,10 @@ export const WALL_H = 14;
 export const SPACING_INITIAL = 210;
 export const SPACING_MIN = 115;
 export const SPEED_INITIAL = 1.6;
-export const SPEED_GROWTH = 0.0007;
-export const GAP_SHRINK = 0.0025;
-export const SPACING_SHRINK = 0.008;
-export const OFFSET_GROWTH = 0.004;
+export const SPEED_GROWTH = 0.008;      // applied to sqrt(dist)
+export const GAP_SHRINK = 0.13;         // applied to sqrt(dist)
+export const SPACING_SHRINK = 0.34;     // applied to sqrt(dist)
+export const OFFSET_GROWTH = 0.15;      // applied to sqrt(dist)
 
 /* Combo */
 export const MAX_COMBO_MULTI = 10;
