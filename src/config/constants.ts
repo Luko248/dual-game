@@ -72,7 +72,6 @@ export const FLICKER_DURATION = 180;
 export const GHOST_MIN_LEVEL = 5;
 export const GHOST_SPAWN_CHANCE = 0.08;
 export const GHOST_RADIUS = 12;
-export const GHOST_DURATION = 1000;
 export const C_GHOST = 0xffffff;
 
 /* Storage */

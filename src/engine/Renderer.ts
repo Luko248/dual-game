@@ -192,10 +192,15 @@ export class Renderer {
   }
 
   /* ---- player dots ---- */
-  drawDots(lx: number, rx: number, dotY: number, time: number, sx: number, sy: number): void {
+  drawDots(lx: number, rx: number, dotY: number, time: number, sx: number, sy: number, ghost = false): void {
     const pulse = 1 + 0.06 * Math.sin(time * 0.007);
-    this.drawDot(lx + sx, dotY + sy, DOT_R * pulse, C_LEFT);
-    this.drawDot(rx + sx, dotY + sy, DOT_R * pulse, C_RIGHT);
+    if (ghost) {
+      this.drawGhostDot(lx + sx, dotY + sy, DOT_R * pulse, C_LEFT, time);
+      this.drawGhostDot(rx + sx, dotY + sy, DOT_R * pulse, C_RIGHT, time);
+    } else {
+      this.drawDot(lx + sx, dotY + sy, DOT_R * pulse, C_LEFT);
+      this.drawDot(rx + sx, dotY + sy, DOT_R * pulse, C_RIGHT);
+    }
   }
 
   private drawDot(x: number, y: number, r: number, color: number): void {
@@ -205,6 +210,22 @@ export class Renderer {
     g.fillStyle(color, 1);     g.fillCircle(x, y, r);
     g.fillStyle(0xffffff, 0.35);
     g.fillCircle(x - r * 0.22, y - r * 0.22, r * 0.38);
+  }
+
+  private drawGhostDot(x: number, y: number, r: number, color: number, time: number): void {
+    const g = this.l.dots;
+    const flicker = 0.3 + 0.15 * Math.sin(time * 0.015);
+    /* wide translucent glow */
+    g.fillStyle(C_GHOST, 0.1 * flicker);
+    g.fillCircle(x, y, r * 2.8);
+    /* colored but faded */
+    g.fillStyle(color, 0.12 * flicker);
+    g.fillCircle(x, y, r * 1.8);
+    /* white translucent core */
+    g.fillStyle(C_GHOST, 0.45 * flicker);
+    g.fillCircle(x, y, r);
+    g.fillStyle(0xffffff, 0.6 * flicker);
+    g.fillCircle(x, y, r * 0.5);
   }
 
   /* ---- direction indicators at bottom ---- */
@@ -238,9 +259,9 @@ export class Renderer {
   drawGhosts(obstacles: Obstacle[], sx: number, sy: number, time: number): void {
     const g = this.l.fx;
     for (const o of obstacles) {
-      if (o.ghostX == null || o.ghostCollected) continue;
+      if (o.ghostX == null || o.ghostY == null || o.ghostCollected) continue;
       const x = o.ghostX + sx;
-      const y = o.y + sy;
+      const y = o.ghostY + sy;
       const pulse = 0.5 + 0.3 * Math.sin(time * 0.008);
       const r = GHOST_RADIUS + 2 * Math.sin(time * 0.006);
 
@@ -257,20 +278,6 @@ export class Renderer {
       g.fillStyle(0xffffff, 0.7);
       g.fillCircle(x, y, r * 0.4);
     }
-  }
-
-  /* ---- ghost invincibility glow on dots ---- */
-  drawGhostAura(lx: number, rx: number, dotY: number, time: number, sx: number, sy: number, alpha: number): void {
-    const g = this.l.dots;
-    const pulse = 0.4 + 0.3 * Math.sin(time * 0.012);
-    const a = pulse * alpha;
-    const r = DOT_R * 2.8;
-    g.fillStyle(C_GHOST, a * 0.15);
-    g.fillCircle(lx + sx, dotY + sy, r);
-    g.fillCircle(rx + sx, dotY + sy, r);
-    g.fillStyle(C_GHOST, a * 0.35);
-    g.fillCircle(lx + sx, dotY + sy, DOT_R * 1.6);
-    g.fillCircle(rx + sx, dotY + sy, DOT_R * 1.6);
   }
 
   /* ---- dark overlay (used on death) ---- */

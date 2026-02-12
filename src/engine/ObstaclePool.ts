@@ -14,8 +14,9 @@ export interface Obstacle {
   gapW: number;
   passed: boolean;
   nearFlag: boolean;
-  ghostX?: number;       // x-center of ghost pickup (left or right lane)
-  ghostLane?: 'left' | 'right';
+  ghostPassed?: boolean;  // wall was phased through via ghost
+  ghostX?: number;        // x-center of ghost pickup
+  ghostY?: number;        // y-center (between this wall and the one below)
   ghostCollected?: boolean;
 }
 
@@ -56,12 +57,16 @@ export class ObstaclePool {
 
     const ob: Obstacle = { y, leftGapX, rightGapX, gapW: gap, passed: false, nearFlag: false };
 
-    /* ghost power-up — spawns in gap center of a random lane */
-    const level = Math.floor(dist / 600);   // approximate score-to-dist mapping
+    /* ghost power-up — floats in open space below this wall */
+    const level = Math.floor(dist / 600);
     if (level >= GHOST_MIN_LEVEL && Math.random() < GHOST_SPAWN_CHANCE) {
-      const lane = Math.random() < 0.5 ? 'left' : 'right';
-      ob.ghostLane = lane;
-      ob.ghostX = lane === 'left' ? leftGapX : rightGapX;
+      const sp = this.spacing(dist);
+      ob.ghostY = y + sp * 0.5;  // halfway to the next wall below
+      /* random x in either lane, avoiding edges */
+      const inLeft = Math.random() < 0.5;
+      ob.ghostX = inLeft
+        ? Phaser.Math.Between(DOT_R + 10, HALF - DOT_R - 10)
+        : Phaser.Math.Between(HALF + DOT_R + 10, W - DOT_R - 10);
       ob.ghostCollected = false;
     }
 
@@ -70,7 +75,10 @@ export class ObstaclePool {
 
   /** Move everything down, spawn new rows, cull off-screen */
   scroll(amount: number, dist: number): void {
-    for (const o of this.items) o.y += amount;
+    for (const o of this.items) {
+      o.y += amount;
+      if (o.ghostY != null) o.ghostY += amount;
+    }
 
     this.nextY += amount;
     while (this.nextY > -60) {

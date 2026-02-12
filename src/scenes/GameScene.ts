@@ -6,7 +6,7 @@ import {
   C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY,
   THEMES, FLICKER_START_SCORE, FLICKER_INTERVAL_MIN,
   FLICKER_INTERVAL_MAX, FLICKER_DURATION,
-  GHOST_RADIUS, GHOST_DURATION
+  GHOST_RADIUS
 } from '../config/constants';
 import { sfx } from '../engine/SoundEngine';
 import { InputManager } from '../engine/InputManager';
@@ -47,9 +47,8 @@ export class GameScene extends Phaser.Scene {
   private leftTrail!: number[];
   private rightTrail!: number[];
 
-  /* ghost power-up */
+  /* ghost power-up — pass through 1 wall */
   private ghostActive!: boolean;
-  private ghostTimer!: number;
   private ghostTxt!: Phaser.GameObjects.Text;
 
   /* death */
@@ -111,7 +110,6 @@ export class GameScene extends Phaser.Scene {
 
     /* ghost power-up */
     this.ghostActive = false;
-    this.ghostTimer = 0;
 
     /* death */
     this.deathParticles = [];
@@ -210,25 +208,27 @@ export class GameScene extends Phaser.Scene {
     this.dist += scroll;
     this.pool.scroll(scroll, this.dist);
 
-    /* -- ghost timer -- */
-    if (this.ghostActive) {
-      this.ghostTimer -= delta;
-      if (this.ghostTimer <= 0) {
-        this.ghostActive = false;
-        this.ghostTimer = 0;
-      }
-    }
-
     /* -- collision & scoring -- */
     for (const o of this.pool.items) {
       const inBand = o.y > DOT_Y - WALL_H / 2 - DOT_R && o.y < DOT_Y + WALL_H / 2 + DOT_R;
 
-      if (inBand && !this.ghostActive) {
-        if (this.hitTest(this.leftDot.x, o.leftGapX, o.gapW))  { this.die('left'); return; }
-        if (this.hitTest(this.rightDot.x, o.rightGapX, o.gapW)) { this.die('right'); return; }
+      if (inBand && !o.ghostPassed) {
+        const leftHit = this.hitTest(this.leftDot.x, o.leftGapX, o.gapW);
+        const rightHit = this.hitTest(this.rightDot.x, o.rightGapX, o.gapW);
+
+        if (leftHit || rightHit) {
+          if (this.ghostActive) {
+            /* ghost phases through this wall — mark it permanently safe */
+            this.ghostActive = false;
+            o.ghostPassed = true;
+          } else {
+            this.die(leftHit ? 'left' : 'right');
+            return;
+          }
+        }
 
         /* near-miss */
-        if (!o.nearFlag) {
+        if (!this.ghostActive && !o.nearFlag) {
           const lD = Math.abs(this.leftDot.x - o.leftGapX);
           const rD = Math.abs(this.rightDot.x - o.rightGapX);
           const edge = o.gapW / 2 - DOT_R;
@@ -240,15 +240,17 @@ export class GameScene extends Phaser.Scene {
         }
       }
 
-      /* -- ghost pickup -- */
-      if (o.ghostX != null && !o.ghostCollected) {
-        const dotX = o.ghostLane === 'left' ? this.leftDot.x : this.rightDot.x;
-        const dx = dotX - o.ghostX;
-        const dy = DOT_Y - o.y;
-        if (dx * dx + dy * dy < (GHOST_RADIUS + DOT_R) * (GHOST_RADIUS + DOT_R)) {
+      /* -- ghost pickup (floats between walls) -- */
+      if (o.ghostX != null && o.ghostY != null && !o.ghostCollected) {
+        /* check both dots against the ghost circle */
+        const gr2 = (GHOST_RADIUS + DOT_R) * (GHOST_RADIUS + DOT_R);
+        const ldx = this.leftDot.x - o.ghostX;
+        const ldy = DOT_Y - o.ghostY;
+        const rdx = this.rightDot.x - o.ghostX;
+        const rdy = DOT_Y - o.ghostY;
+        if (ldx * ldx + ldy * ldy < gr2 || rdx * rdx + rdy * rdy < gr2) {
           o.ghostCollected = true;
           this.ghostActive = true;
-          this.ghostTimer = GHOST_DURATION;
           sfx.play('combo');
           this.ghostTxt.setAlpha(1);
           this.tweens.add({ targets: this.ghostTxt, alpha: 0, duration: 600 });
@@ -317,13 +319,7 @@ export class GameScene extends Phaser.Scene {
     this.gfx.drawObstacles(this.pool.items, sx, sy, time);
     this.gfx.drawGhosts(this.pool.items, sx, sy, time);
     this.gfx.drawTrails(this.leftTrail, this.rightTrail, DOT_Y, sx, sy);
-    this.gfx.drawDots(this.leftDot.x, this.rightDot.x, DOT_Y, time, sx, sy);
-
-    /* ghost invincibility aura */
-    if (this.ghostActive) {
-      const ghostAlpha = Math.min(1, this.ghostTimer / 300);
-      this.gfx.drawGhostAura(this.leftDot.x, this.rightDot.x, DOT_Y, time, sx, sy, ghostAlpha);
-    }
+    this.gfx.drawDots(this.leftDot.x, this.rightDot.x, DOT_Y, time, sx, sy, this.ghostActive);
 
     /* direction hint arrows — fade out as score increases */
     const hintAlpha = Math.max(0, 1 - this.score / 50);
