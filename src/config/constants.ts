@@ -17,8 +17,8 @@ export const GAP_MIN = 36;
 export const WALL_H = 14;
 export const SPACING_INITIAL = 210;
 export const SPACING_MIN = 115;
-export const SPEED_INITIAL = 1.6;
-export const SPEED_GROWTH = 0.008;      // applied to sqrt(dist)
+export const SPEED_INITIAL = 1.8;
+export const SPEED_GROWTH = 0.012;      // applied to sqrt(dist)
 export const GAP_SHRINK = 0.13;         // applied to sqrt(dist)
 export const SPACING_SHRINK = 0.34;     // applied to sqrt(dist)
 export const OFFSET_GROWTH = 0.15;      // applied to sqrt(dist)
@@ -58,6 +58,8 @@ export const THEMES: readonly Theme[] = [
   { name: 'solar',   bg: 0x0f0a05, grid: 0x1a1408, wall: 0x282015, edge: 0x4a3a2a, divider: 0x1c180e },
   { name: 'frost',   bg: 0x050a0f, grid: 0x081420, wall: 0x152035, edge: 0x2a3a5a, divider: 0x0e141c },
   { name: 'blood',   bg: 0x0a0308, grid: 0x18061a, wall: 0x280a20, edge: 0x4a1a3a, divider: 0x1c0818 },
+  { name: 'neon',    bg: 0x030a0f, grid: 0x061828, wall: 0x0a2540, edge: 0x1a4a6a, divider: 0x081420 },
+  { name: 'ember',   bg: 0x0f0803, grid: 0x1a1206, wall: 0x28200a, edge: 0x4a381a, divider: 0x1c1408 },
 ] as const;
 
 /* Flicker / distortion */
@@ -65,6 +67,13 @@ export const FLICKER_START_SCORE = 150;
 export const FLICKER_INTERVAL_MIN = 3000;
 export const FLICKER_INTERVAL_MAX = 8000;
 export const FLICKER_DURATION = 180;
+
+/* Ghost power-up */
+export const GHOST_MIN_LEVEL = 5;
+export const GHOST_SPAWN_CHANCE = 0.08;
+export const GHOST_RADIUS = 12;
+export const GHOST_DURATION = 1000;
+export const C_GHOST = 0xffffff;
 
 /* Storage */
 export const HI_SCORE_KEY = 'dual_hi';

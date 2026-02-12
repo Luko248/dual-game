@@ -1,6 +1,6 @@
 import {
   W, H, HALF, DOT_R, WALL_H, GATE_W, GATE_EXTEND,
-  C_LEFT, C_RIGHT,
+  C_LEFT, C_RIGHT, C_GHOST, GHOST_RADIUS,
   THEMES, Theme
 } from '../config/constants';
 import type { Obstacle } from './ObstaclePool';
@@ -205,6 +205,79 @@ export class Renderer {
     g.fillStyle(color, 1);     g.fillCircle(x, y, r);
     g.fillStyle(0xffffff, 0.35);
     g.fillCircle(x - r * 0.22, y - r * 0.22, r * 0.38);
+  }
+
+  /* ---- direction indicators at bottom ---- */
+  drawDirectionHints(time: number, alpha: number): void {
+    const g = this.l.fx;
+    const y = H - 38;
+    const a = alpha * (0.25 + 0.08 * Math.sin(time * 0.003));
+
+    /* LEFT side — spread arrows: ← → pointing outward */
+    const lx = W * 0.25;
+    /* left-pointing arrow */
+    g.fillStyle(C_LEFT, a);
+    g.fillTriangle(lx - 18, y, lx - 6, y - 6, lx - 6, y + 6);
+    /* right-pointing arrow */
+    g.fillStyle(C_RIGHT, a);
+    g.fillTriangle(lx + 18, y, lx + 6, y - 6, lx + 6, y + 6);
+    /* label */
+    // drawn as small dots between arrows to suggest "spread"
+
+    /* RIGHT side — gather arrows: → ← pointing inward */
+    const rx = W * 0.75;
+    /* right-pointing arrow (coming from left) */
+    g.fillStyle(C_LEFT, a);
+    g.fillTriangle(rx - 6, y, rx - 18, y - 6, rx - 18, y + 6);
+    /* left-pointing arrow (coming from right) */
+    g.fillStyle(C_RIGHT, a);
+    g.fillTriangle(rx + 6, y, rx + 18, y - 6, rx + 18, y + 6);
+  }
+
+  /* ---- ghost power-ups ---- */
+  drawGhosts(obstacles: Obstacle[], sx: number, sy: number, time: number): void {
+    const g = this.l.fx;
+    for (const o of obstacles) {
+      if (o.ghostX == null || o.ghostCollected) continue;
+      const x = o.ghostX + sx;
+      const y = o.y + sy;
+      const pulse = 0.5 + 0.3 * Math.sin(time * 0.008);
+      const r = GHOST_RADIUS + 2 * Math.sin(time * 0.006);
+
+      /* outer glow */
+      g.fillStyle(C_GHOST, 0.08 * pulse);
+      g.fillCircle(x, y, r * 2.5);
+      /* mid glow */
+      g.fillStyle(C_GHOST, 0.18 * pulse);
+      g.fillCircle(x, y, r * 1.5);
+      /* core */
+      g.fillStyle(C_GHOST, 0.55 * pulse);
+      g.fillCircle(x, y, r);
+      /* bright center */
+      g.fillStyle(0xffffff, 0.7);
+      g.fillCircle(x, y, r * 0.4);
+    }
+  }
+
+  /* ---- ghost invincibility glow on dots ---- */
+  drawGhostAura(lx: number, rx: number, dotY: number, time: number, sx: number, sy: number, alpha: number): void {
+    const g = this.l.dots;
+    const pulse = 0.4 + 0.3 * Math.sin(time * 0.012);
+    const a = pulse * alpha;
+    const r = DOT_R * 2.8;
+    g.fillStyle(C_GHOST, a * 0.15);
+    g.fillCircle(lx + sx, dotY + sy, r);
+    g.fillCircle(rx + sx, dotY + sy, r);
+    g.fillStyle(C_GHOST, a * 0.35);
+    g.fillCircle(lx + sx, dotY + sy, DOT_R * 1.6);
+    g.fillCircle(rx + sx, dotY + sy, DOT_R * 1.6);
+  }
+
+  /* ---- dark overlay (used on death) ---- */
+  drawOverlay(alpha: number): void {
+    const g = this.l.fx;
+    g.fillStyle(0x000000, alpha);
+    g.fillRect(0, 0, W, H);
   }
 
   /* ---- death particles ---- */

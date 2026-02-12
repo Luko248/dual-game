@@ -3,7 +3,8 @@ import {
   HALF, W, DOT_R,
   GAP_INITIAL, GAP_MIN, GAP_SHRINK,
   SPACING_INITIAL, SPACING_MIN, SPACING_SHRINK,
-  OFFSET_GROWTH, H
+  OFFSET_GROWTH, H,
+  GHOST_MIN_LEVEL, GHOST_SPAWN_CHANCE
 } from '../config/constants';
 
 export interface Obstacle {
@@ -13,6 +14,9 @@ export interface Obstacle {
   gapW: number;
   passed: boolean;
   nearFlag: boolean;
+  ghostX?: number;       // x-center of ghost pickup (left or right lane)
+  ghostLane?: 'left' | 'right';
+  ghostCollected?: boolean;
 }
 
 /**
@@ -50,7 +54,18 @@ export class ObstaclePool {
     const offset = (Math.random() * 2 - 1) * maxOff;
     const rightGapX = Phaser.Math.Clamp(mirror + offset, HALF + m, W - m);
 
-    this.items.push({ y, leftGapX, rightGapX, gapW: gap, passed: false, nearFlag: false });
+    const ob: Obstacle = { y, leftGapX, rightGapX, gapW: gap, passed: false, nearFlag: false };
+
+    /* ghost power-up — spawns in gap center of a random lane */
+    const level = Math.floor(dist / 600);   // approximate score-to-dist mapping
+    if (level >= GHOST_MIN_LEVEL && Math.random() < GHOST_SPAWN_CHANCE) {
+      const lane = Math.random() < 0.5 ? 'left' : 'right';
+      ob.ghostLane = lane;
+      ob.ghostX = lane === 'left' ? leftGapX : rightGapX;
+      ob.ghostCollected = false;
+    }
+
+    this.items.push(ob);
   }
 
   /** Move everything down, spawn new rows, cull off-screen */

@@ -5,7 +5,8 @@ import {
   SPEED_INITIAL, SPEED_GROWTH, MAX_COMBO_MULTI,
   C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY,
   THEMES, FLICKER_START_SCORE, FLICKER_INTERVAL_MIN,
-  FLICKER_INTERVAL_MAX, FLICKER_DURATION
+  FLICKER_INTERVAL_MAX, FLICKER_DURATION,
+  GHOST_RADIUS, GHOST_DURATION
 } from '../config/constants';
 import { sfx } from '../engine/SoundEngine';
 import { InputManager } from '../engine/InputManager';
@@ -45,6 +46,11 @@ export class GameScene extends Phaser.Scene {
   /* trails */
   private leftTrail!: number[];
   private rightTrail!: number[];
+
+  /* ghost power-up */
+  private ghostActive!: boolean;
+  private ghostTimer!: number;
+  private ghostTxt!: Phaser.GameObjects.Text;
 
   /* death */
   private deathParticles!: DeathParticle[];
@@ -103,6 +109,10 @@ export class GameScene extends Phaser.Scene {
     this.leftTrail = [];
     this.rightTrail = [];
 
+    /* ghost power-up */
+    this.ghostActive = false;
+    this.ghostTimer = 0;
+
     /* death */
     this.deathParticles = [];
     this.deathTimer = 0;
@@ -144,6 +154,19 @@ export class GameScene extends Phaser.Scene {
     this.levelTxt = this.add.text(W / 2, H / 2 + 28, '', {
       fontSize: '11px', fontFamily: 'monospace', color: '#888899'
     }).setOrigin(0.5).setAlpha(0).setDepth(15);
+
+    this.ghostTxt = this.add.text(W / 2, DOT_Y - 50, 'GHOST!', {
+      fontSize: '16px', fontFamily: 'monospace', color: '#ffffff', fontStyle: 'bold'
+    }).setOrigin(0.5).setAlpha(0).setDepth(15);
+
+    /* direction hint labels */
+    this.add.text(W * 0.25, H - 22, 'SPREAD', {
+      fontSize: '9px', fontFamily: 'monospace', color: '#555577'
+    }).setOrigin(0.5).setAlpha(0.35).setDepth(10);
+
+    this.add.text(W * 0.75, H - 22, 'GATHER', {
+      fontSize: '9px', fontFamily: 'monospace', color: '#555577'
+    }).setOrigin(0.5).setAlpha(0.35).setDepth(10);
   }
 
   /* ---- helpers ---- */
@@ -187,11 +210,20 @@ export class GameScene extends Phaser.Scene {
     this.dist += scroll;
     this.pool.scroll(scroll, this.dist);
 
+    /* -- ghost timer -- */
+    if (this.ghostActive) {
+      this.ghostTimer -= delta;
+      if (this.ghostTimer <= 0) {
+        this.ghostActive = false;
+        this.ghostTimer = 0;
+      }
+    }
+
     /* -- collision & scoring -- */
     for (const o of this.pool.items) {
       const inBand = o.y > DOT_Y - WALL_H / 2 - DOT_R && o.y < DOT_Y + WALL_H / 2 + DOT_R;
 
-      if (inBand) {
+      if (inBand && !this.ghostActive) {
         if (this.hitTest(this.leftDot.x, o.leftGapX, o.gapW))  { this.die('left'); return; }
         if (this.hitTest(this.rightDot.x, o.rightGapX, o.gapW)) { this.die('right'); return; }
 
@@ -205,6 +237,21 @@ export class GameScene extends Phaser.Scene {
             this.shakeAmt = 3;
             sfx.play('near');
           }
+        }
+      }
+
+      /* -- ghost pickup -- */
+      if (o.ghostX != null && !o.ghostCollected) {
+        const dotX = o.ghostLane === 'left' ? this.leftDot.x : this.rightDot.x;
+        const dx = dotX - o.ghostX;
+        const dy = DOT_Y - o.y;
+        if (dx * dx + dy * dy < (GHOST_RADIUS + DOT_R) * (GHOST_RADIUS + DOT_R)) {
+          o.ghostCollected = true;
+          this.ghostActive = true;
+          this.ghostTimer = GHOST_DURATION;
+          sfx.play('combo');
+          this.ghostTxt.setAlpha(1);
+          this.tweens.add({ targets: this.ghostTxt, alpha: 0, duration: 600 });
         }
       }
 
@@ -268,8 +315,21 @@ export class GameScene extends Phaser.Scene {
     this.gfx.clearAll();
     this.gfx.drawBg(this.dist, time, sx, sy, this.cameras.main);
     this.gfx.drawObstacles(this.pool.items, sx, sy, time);
+    this.gfx.drawGhosts(this.pool.items, sx, sy, time);
     this.gfx.drawTrails(this.leftTrail, this.rightTrail, DOT_Y, sx, sy);
     this.gfx.drawDots(this.leftDot.x, this.rightDot.x, DOT_Y, time, sx, sy);
+
+    /* ghost invincibility aura */
+    if (this.ghostActive) {
+      const ghostAlpha = Math.min(1, this.ghostTimer / 300);
+      this.gfx.drawGhostAura(this.leftDot.x, this.rightDot.x, DOT_Y, time, sx, sy, ghostAlpha);
+    }
+
+    /* direction hint arrows — fade out as score increases */
+    const hintAlpha = Math.max(0, 1 - this.score / 50);
+    if (hintAlpha > 0) {
+      this.gfx.drawDirectionHints(time, hintAlpha);
+    }
 
     /* flicker overlay on top */
     if (this.flickerPhase > 0) {
@@ -337,6 +397,10 @@ export class GameScene extends Phaser.Scene {
     this.gfx.drawBg(this.dist, time, sx, sy, this.cameras.main);
     this.gfx.drawObstacles(this.pool.items, sx, sy, time);
 
+    /* dark overlay fade-in */
+    const overlayAlpha = Math.min(0.65, this.deathTimer / 600);
+    this.gfx.drawOverlay(overlayAlpha);
+
     /* surviving dot fades */
     const surv = this.deadSide === 'left' ? this.rightDot : this.leftDot;
     const sCol = this.deadSide === 'left' ? C_RIGHT : C_LEFT;
@@ -359,7 +423,7 @@ export class GameScene extends Phaser.Scene {
       }).setOrigin(0.5).setAlpha(0).setDepth(20);
 
       this.goScore = this.add.text(W / 2, H / 2, 'Score: ' + this.score, {
-        fontSize: '17px', fontFamily: 'monospace', color: '#888899'
+        fontSize: '22px', fontFamily: 'monospace', color: '#888899'
       }).setOrigin(0.5).setAlpha(0).setDepth(20);
 
       const hiLabel = this.newBest ? ('NEW BEST: ' + this.hiScore) : ('Best: ' + this.hiScore);
