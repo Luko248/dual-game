@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
-import { W, H, C_BG } from './config/constants.js';
-import { MenuScene } from './scenes/MenuScene.js';
-import { GameScene } from './scenes/GameScene.js';
+import { W, H, C_BG } from './config/constants';
+import { MenuScene } from './scenes/MenuScene';
+import { GameScene } from './scenes/GameScene';
 
 /* ---- Launch Phaser ---- */
 new Phaser.Game({

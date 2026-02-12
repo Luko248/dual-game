@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
-import { W, H, HALF, DOT_R, C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY } from '../config/constants.js';
-import { sfx } from '../engine/SoundEngine.js';
+import { W, DOT_R, C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY } from '../config/constants';
+import { sfx } from '../engine/SoundEngine';
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
     super('Menu');
   }
 
-  create() {
+  create(): void {
     this.cameras.main.setBackgroundColor(C_BG);
     const cx = W / 2;
 
@@ -45,8 +45,8 @@ export class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     /* high score */
-    const hi = localStorage.getItem(HI_SCORE_KEY) || 0;
-    if (hi > 0) {
+    const hi = localStorage.getItem(HI_SCORE_KEY) || '0';
+    if (parseInt(hi, 10) > 0) {
       this.add.text(cx, dy + 170, 'BEST: ' + hi, {
         fontSize: '18px', fontFamily: 'monospace', color: '#555577'
       }).setOrigin(0.5);
@@ -65,6 +65,6 @@ export class MenuScene extends Phaser.Scene {
       this.scene.start('Game');
     };
     this.input.once('pointerdown', go);
-    this.input.keyboard.once('keydown', go);
+    this.input.keyboard!.once('keydown', go);
   }
 }

@@ -40,7 +40,16 @@ export const C_DIVIDER = 0x0e0e1c;
 export const C_GRID    = 0x08081a;
 
 /* Background themes — cycle every 100 points */
-export const THEMES = [
+export interface Theme {
+  name: string;
+  bg: number;
+  grid: number;
+  wall: number;
+  edge: number;
+  divider: number;
+}
+
+export const THEMES: readonly Theme[] = [
   { name: 'void',    bg: 0x05050a, grid: 0x08081a, wall: 0x151528, edge: 0x2a2a4a, divider: 0x0e0e1c },
   { name: 'abyss',   bg: 0x050a12, grid: 0x081a2a, wall: 0x102040, edge: 0x1a3a6a, divider: 0x0a1828 },
   { name: 'inferno', bg: 0x0f0505, grid: 0x1a0808, wall: 0x281515, edge: 0x4a2a2a, divider: 0x1c0e0e },
@@ -49,7 +58,7 @@ export const THEMES = [
   { name: 'solar',   bg: 0x0f0a05, grid: 0x1a1408, wall: 0x282015, edge: 0x4a3a2a, divider: 0x1c180e },
   { name: 'frost',   bg: 0x050a0f, grid: 0x081420, wall: 0x152035, edge: 0x2a3a5a, divider: 0x0e141c },
   { name: 'blood',   bg: 0x0a0308, grid: 0x18061a, wall: 0x280a20, edge: 0x4a1a3a, divider: 0x1c0818 },
-];
+] as const;
 
 /* Flicker / distortion */
 export const FLICKER_START_SCORE = 150;

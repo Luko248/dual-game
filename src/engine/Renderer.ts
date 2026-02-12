@@ -1,8 +1,17 @@
 import {
   W, H, HALF, DOT_R, WALL_H, GATE_W, GATE_EXTEND,
-  C_LEFT, C_RIGHT, C_WALL, C_EDGE, C_DIVIDER, C_GRID,
-  THEMES
-} from '../config/constants.js';
+  C_LEFT, C_RIGHT,
+  THEMES, Theme
+} from '../config/constants';
+import type { Obstacle } from './ObstaclePool';
+
+export interface GraphicsLayers {
+  bg: Phaser.GameObjects.Graphics;
+  walls: Phaser.GameObjects.Graphics;
+  trails: Phaser.GameObjects.Graphics;
+  dots: Phaser.GameObjects.Graphics;
+  fx: Phaser.GameObjects.Graphics;
+}
 
 /**
  * All drawing logic — keeps scenes lean.
@@ -10,25 +19,26 @@ import {
  * Supports themed backgrounds and flicker effects.
  */
 export class Renderer {
-  constructor(layers) {
-    /** { bg, walls, trails, dots, fx } */
+  l: GraphicsLayers;
+  private theme: Theme = THEMES[0];
+  flickering = false;
+  private themeFlash = 0;
+
+  constructor(layers: GraphicsLayers) {
     this.l = layers;
-    this.theme = THEMES[0];
-    this.flickering = false;
-    this.themeFlash = 0;     // 0..1 white flash on theme transition
   }
 
-  setTheme(index) {
+  setTheme(index: number): void {
     this.theme = THEMES[index % THEMES.length];
     this.themeFlash = 1;
   }
 
-  clearAll() {
-    for (const k in this.l) this.l[k].clear();
+  clearAll(): void {
+    for (const k in this.l) this.l[k as keyof GraphicsLayers].clear();
   }
 
   /* ---- background ---- */
-  drawBg(dist, time, sx, sy, camera) {
+  drawBg(dist: number, time: number, sx: number, sy: number, camera?: Phaser.Cameras.Scene2D.Camera): void {
     const bg = this.l.bg;
     const t = this.theme;
 
@@ -68,23 +78,23 @@ export class Renderer {
   }
 
   /* ---- obstacles with portal gates ---- */
-  drawObstacles(obstacles, sx, sy, time) {
+  drawObstacles(obstacles: Obstacle[], sx: number, sy: number, time: number): void {
     for (const o of obstacles) this.drawWall(o, sx, sy, time);
   }
 
-  drawWall(o, sx, sy, time) {
-    const g = this.l.walls;
+  private drawWall(o: Obstacle, sx: number, sy: number, time: number): void {
     const y = o.y + sy;
     const hg = o.gapW / 2;
     const t = this.theme;
 
     /* left lane */
-    this._wallPair(g, sx, y, o.leftGapX, hg, 0, HALF, C_LEFT, t, time);
+    this._wallPair(sx, y, o.leftGapX, hg, 0, HALF, C_LEFT, t, time);
     /* right lane */
-    this._wallPair(g, sx, y, o.rightGapX, hg, HALF, W, C_RIGHT, t, time);
+    this._wallPair(sx, y, o.rightGapX, hg, HALF, W, C_RIGHT, t, time);
   }
 
-  _wallPair(g, sx, y, gapX, hg, laneL, laneR, glowCol, t, time) {
+  private _wallPair(sx: number, y: number, gapX: number, hg: number, laneL: number, laneR: number, glowCol: number, t: Theme, time: number): void {
+    const g = this.l.walls;
     const gapL = gapX - hg;
     const gapR = gapX + hg;
 
@@ -135,7 +145,7 @@ export class Renderer {
   }
 
   /* ---- flicker overlay ---- */
-  drawFlicker(flickerPhase) {
+  drawFlicker(flickerPhase: number): void {
     if (flickerPhase <= 0) return;
     const fx = this.l.fx;
 
@@ -167,12 +177,12 @@ export class Renderer {
   }
 
   /* ---- trails ---- */
-  drawTrails(leftTrail, rightTrail, dotY, sx, sy) {
+  drawTrails(leftTrail: number[], rightTrail: number[], dotY: number, sx: number, sy: number): void {
     this._trail(leftTrail, C_LEFT, dotY, sx, sy);
     this._trail(rightTrail, C_RIGHT, dotY, sx, sy);
   }
 
-  _trail(arr, color, dotY, sx, sy) {
+  private _trail(arr: number[], color: number, dotY: number, sx: number, sy: number): void {
     const n = arr.length;
     const g = this.l.trails;
     for (let i = 0; i < n; i++) {
@@ -182,13 +192,13 @@ export class Renderer {
   }
 
   /* ---- player dots ---- */
-  drawDots(lx, rx, dotY, time, sx, sy) {
+  drawDots(lx: number, rx: number, dotY: number, time: number, sx: number, sy: number): void {
     const pulse = 1 + 0.06 * Math.sin(time * 0.007);
     this.drawDot(lx + sx, dotY + sy, DOT_R * pulse, C_LEFT);
     this.drawDot(rx + sx, dotY + sy, DOT_R * pulse, C_RIGHT);
   }
 
-  drawDot(x, y, r, color) {
+  private drawDot(x: number, y: number, r: number, color: number): void {
     const g = this.l.dots;
     g.fillStyle(color, 0.12);  g.fillCircle(x, y, r * 2.2);
     g.fillStyle(color, 0.28);  g.fillCircle(x, y, r * 1.45);
@@ -198,7 +208,7 @@ export class Renderer {
   }
 
   /* ---- death particles ---- */
-  drawParticles(particles, sx, sy) {
+  drawParticles(particles: DeathParticle[], sx: number, sy: number): void {
     const g = this.l.fx;
     for (const p of particles) {
       if (p.life > 0) {
@@ -207,4 +217,13 @@ export class Renderer {
       }
     }
   }
+}
+
+export interface DeathParticle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  color: number;
 }

@@ -4,20 +4,26 @@ import {
   GAP_INITIAL, GAP_MIN, GAP_SHRINK,
   SPACING_INITIAL, SPACING_MIN, SPACING_SHRINK,
   OFFSET_GROWTH, H
-} from '../config/constants.js';
+} from '../config/constants';
+
+export interface Obstacle {
+  y: number;
+  leftGapX: number;
+  rightGapX: number;
+  gapW: number;
+  passed: boolean;
+  nearFlag: boolean;
+}
 
 /**
  * Spawns, scrolls, culls, and exposes obstacle data.
- * Each obstacle = { y, leftGapX, rightGapX, gapW, passed, nearFlag }
  */
 export class ObstaclePool {
-  constructor() {
-    this.items = [];
-    this.nextY = 0;
-  }
+  items: Obstacle[] = [];
+  private nextY = 0;
 
   /** Call once in create() to seed obstacles above the viewport */
-  seed(startY, dist) {
+  seed(startY: number, dist: number): void {
     let y = startY;
     while (y > -200) {
       this.spawn(y, dist);
@@ -26,15 +32,15 @@ export class ObstaclePool {
     this.nextY = y;
   }
 
-  gap(dist) {
+  gap(dist: number): number {
     return Math.max(GAP_MIN, GAP_INITIAL - dist * GAP_SHRINK);
   }
 
-  spacing(dist) {
+  spacing(dist: number): number {
     return Math.max(SPACING_MIN, SPACING_INITIAL - dist * SPACING_SHRINK);
   }
 
-  spawn(y, dist) {
+  spawn(y: number, dist: number): void {
     const gap = this.gap(dist);
     const m = gap / 2 + 8;
 
@@ -48,7 +54,7 @@ export class ObstaclePool {
   }
 
   /** Move everything down, spawn new rows, cull off-screen */
-  scroll(amount, dist) {
+  scroll(amount: number, dist: number): void {
     for (const o of this.items) o.y += amount;
 
     this.nextY += amount;

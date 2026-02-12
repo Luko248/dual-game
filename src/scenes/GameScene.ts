@@ -6,18 +6,73 @@ import {
   C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY,
   THEMES, FLICKER_START_SCORE, FLICKER_INTERVAL_MIN,
   FLICKER_INTERVAL_MAX, FLICKER_DURATION
-} from '../config/constants.js';
-import { sfx } from '../engine/SoundEngine.js';
-import { InputManager } from '../engine/InputManager.js';
-import { ObstaclePool } from '../engine/ObstaclePool.js';
-import { Renderer } from '../engine/Renderer.js';
+} from '../config/constants';
+import { sfx } from '../engine/SoundEngine';
+import { InputManager } from '../engine/InputManager';
+import { ObstaclePool } from '../engine/ObstaclePool';
+import { Renderer, DeathParticle } from '../engine/Renderer';
+
+interface Dot {
+  x: number;
+  vx: number;
+}
 
 export class GameScene extends Phaser.Scene {
+  /* player state */
+  private leftDot!: Dot;
+  private rightDot!: Dot;
+
+  /* scrolling / score */
+  private speed!: number;
+  private dist!: number;
+  private score!: number;
+  private combo!: number;
+  private maxCombo!: number;
+  private alive!: boolean;
+  private hiScore!: number;
+  private newBest!: boolean;
+  private shakeAmt!: number;
+
+  /* theme tracking */
+  private currentTheme!: number;
+  private lastThemeTrigger!: number;
+
+  /* flicker state */
+  private flickerPhase!: number;
+  private flickerTimer!: number;
+  private nextFlickerAt!: number;
+
+  /* trails */
+  private leftTrail!: number[];
+  private rightTrail!: number[];
+
+  /* death */
+  private deathParticles!: DeathParticle[];
+  private deathTimer!: number;
+  private deadSide!: 'left' | 'right' | null;
+  private goText!: Phaser.GameObjects.Text | null;
+  private goScore!: Phaser.GameObjects.Text;
+  private goHi!: Phaser.GameObjects.Text;
+  private goCombo!: Phaser.GameObjects.Text | undefined;
+  private retryText!: Phaser.GameObjects.Text | null;
+
+  /* subsystems */
+  private input_!: InputManager;
+  private pool!: ObstaclePool;
+  private gfx!: Renderer;
+
+  /* HUD */
+  private scoreTxt!: Phaser.GameObjects.Text;
+  private comboTxt!: Phaser.GameObjects.Text;
+  private bestBanner!: Phaser.GameObjects.Text;
+  private themeTxt!: Phaser.GameObjects.Text;
+  private levelTxt!: Phaser.GameObjects.Text;
+
   constructor() {
     super('Game');
   }
 
-  create() {
+  create(): void {
     this.cameras.main.setBackgroundColor(C_BG);
 
     /* player state */
@@ -40,7 +95,7 @@ export class GameScene extends Phaser.Scene {
     this.lastThemeTrigger = 0;
 
     /* flicker state */
-    this.flickerPhase = 0;          // 0 = off, 1 = full intensity
+    this.flickerPhase = 0;
     this.flickerTimer = 0;
     this.nextFlickerAt = this._randomFlickerDelay();
 
@@ -60,7 +115,7 @@ export class GameScene extends Phaser.Scene {
     this.pool = new ObstaclePool();
     this.pool.seed(DOT_Y - 250, this.dist);
 
-    this.renderer = new Renderer({
+    this.gfx = new Renderer({
       bg:     this.add.graphics(),
       walls:  this.add.graphics(),
       trails: this.add.graphics(),
@@ -92,14 +147,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   /* ---- helpers ---- */
-  _randomFlickerDelay() {
+  private _randomFlickerDelay(): number {
     return FLICKER_INTERVAL_MIN + Math.random() * (FLICKER_INTERVAL_MAX - FLICKER_INTERVAL_MIN);
   }
 
   /* ================================================================ */
   /*  UPDATE                                                          */
   /* ================================================================ */
-  update(time, delta) {
+  update(time: number, delta: number): void {
     if (!this.alive) {
       this.updateDeath(delta, time);
       return;
@@ -172,7 +227,7 @@ export class GameScene extends Phaser.Scene {
     const themeIndex = Math.floor(this.score / 100);
     if (themeIndex > this.currentTheme) {
       this.currentTheme = themeIndex;
-      this.renderer.setTheme(themeIndex);
+      this.gfx.setTheme(themeIndex);
       this.shakeAmt = 6;
       sfx.play('combo');
 
@@ -192,13 +247,13 @@ export class GameScene extends Phaser.Scene {
       if (this.flickerPhase > 0) {
         /* flicker is active — decay */
         this.flickerPhase = Math.max(0, this.flickerPhase - delta / FLICKER_DURATION);
-        this.renderer.flickering = this.flickerPhase > 0;
+        this.gfx.flickering = this.flickerPhase > 0;
       } else if (this.flickerTimer >= this.nextFlickerAt) {
         /* trigger a new flicker */
         this.flickerPhase = 1;
         this.flickerTimer = 0;
         this.nextFlickerAt = this._randomFlickerDelay();
-        this.renderer.flickering = true;
+        this.gfx.flickering = true;
         /* extra intensity at higher scores */
         if (this.score > 400) this.shakeAmt = Math.max(this.shakeAmt, 2);
       }
@@ -210,15 +265,15 @@ export class GameScene extends Phaser.Scene {
     const sx = (Math.random() - 0.5) * this.shakeAmt;
     const sy = (Math.random() - 0.5) * this.shakeAmt;
 
-    this.renderer.clearAll();
-    this.renderer.drawBg(this.dist, time, sx, sy, this.cameras.main);
-    this.renderer.drawObstacles(this.pool.items, sx, sy, time);
-    this.renderer.drawTrails(this.leftTrail, this.rightTrail, DOT_Y, sx, sy);
-    this.renderer.drawDots(this.leftDot.x, this.rightDot.x, DOT_Y, time, sx, sy);
+    this.gfx.clearAll();
+    this.gfx.drawBg(this.dist, time, sx, sy, this.cameras.main);
+    this.gfx.drawObstacles(this.pool.items, sx, sy, time);
+    this.gfx.drawTrails(this.leftTrail, this.rightTrail, DOT_Y, sx, sy);
+    this.gfx.drawDots(this.leftDot.x, this.rightDot.x, DOT_Y, time, sx, sy);
 
     /* flicker overlay on top */
     if (this.flickerPhase > 0) {
-      this.renderer.drawFlicker(this.flickerPhase);
+      this.gfx.drawFlicker(this.flickerPhase);
     }
 
     /* HUD */
@@ -234,7 +289,7 @@ export class GameScene extends Phaser.Scene {
   /* ================================================================ */
   /*  COLLISION                                                       */
   /* ================================================================ */
-  hitTest(dotX, gapX, gapW) {
+  private hitTest(dotX: number, gapX: number, gapW: number): boolean {
     const half = gapW / 2;
     return !(dotX - DOT_R >= gapX - half && dotX + DOT_R <= gapX + half);
   }
@@ -242,11 +297,11 @@ export class GameScene extends Phaser.Scene {
   /* ================================================================ */
   /*  DEATH                                                           */
   /* ================================================================ */
-  die(which) {
+  private die(which: 'left' | 'right'): void {
     this.alive = false;
     this.deadSide = which;
     this.combo = 0;
-    this.renderer.flickering = false;
+    this.gfx.flickering = false;
     this.flickerPhase = 0;
     sfx.play('die');
     this.shakeAmt = 10;
@@ -271,23 +326,23 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  updateDeath(delta, time) {
+  private updateDeath(delta: number, time: number): void {
     this.deathTimer += delta;
     this.shakeAmt *= 0.92;
 
     const sx = (Math.random() - 0.5) * this.shakeAmt;
     const sy = (Math.random() - 0.5) * this.shakeAmt;
 
-    this.renderer.clearAll();
-    this.renderer.drawBg(this.dist, time, sx, sy, this.cameras.main);
-    this.renderer.drawObstacles(this.pool.items, sx, sy, time);
+    this.gfx.clearAll();
+    this.gfx.drawBg(this.dist, time, sx, sy, this.cameras.main);
+    this.gfx.drawObstacles(this.pool.items, sx, sy, time);
 
     /* surviving dot fades */
     const surv = this.deadSide === 'left' ? this.rightDot : this.leftDot;
     const sCol = this.deadSide === 'left' ? C_RIGHT : C_LEFT;
     const fade = Math.max(0.3, 1 - this.deathTimer / 2000);
-    this.renderer.l.dots.fillStyle(sCol, fade);
-    this.renderer.l.dots.fillCircle(surv.x + sx, DOT_Y + sy, DOT_R);
+    this.gfx.l.dots.fillStyle(sCol, fade);
+    this.gfx.l.dots.fillCircle(surv.x + sx, DOT_Y + sy, DOT_R);
 
     /* particles */
     for (const p of this.deathParticles) {
@@ -295,7 +350,7 @@ export class GameScene extends Phaser.Scene {
       p.vx *= 0.97; p.vy *= 0.97;
       p.life -= 0.012;
     }
-    this.renderer.drawParticles(this.deathParticles, sx, sy);
+    this.gfx.drawParticles(this.deathParticles, sx, sy);
 
     /* overlay text — created once */
     if (this.deathTimer > 350 && !this.goText) {

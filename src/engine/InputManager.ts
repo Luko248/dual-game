@@ -1,38 +1,45 @@
-import { HALF } from '../config/constants.js';
-import { sfx } from './SoundEngine.js';
+import Phaser from 'phaser';
+import { HALF } from '../config/constants';
+import { sfx } from './SoundEngine';
 
 /**
  * Unified keyboard + multi-touch input.
  * Returns a single direction: -1 (spread), 0 (idle), +1 (gather).
  */
 export class InputManager {
-  constructor(scene) {
+  private scene: Phaser.Scene;
+  private touches: Record<number, 'L' | 'R'> = {};
+  private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  private keyA: Phaser.Input.Keyboard.Key;
+  private keyD: Phaser.Input.Keyboard.Key;
+  private keySpace: Phaser.Input.Keyboard.Key;
+
+  constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    this.touches = {};
 
     /* keyboard */
-    this.cursors = scene.input.keyboard.createCursorKeys();
-    this.keyA = scene.input.keyboard.addKey('A');
-    this.keyD = scene.input.keyboard.addKey('D');
-    this.keySpace = scene.input.keyboard.addKey('SPACE');
+    this.cursors = scene.input.keyboard!.createCursorKeys();
+    this.keyA = scene.input.keyboard!.addKey('A');
+    this.keyD = scene.input.keyboard!.addKey('D');
+    this.keySpace = scene.input.keyboard!.addKey('SPACE');
 
     /* multi-touch */
     scene.input.addPointer(1);
 
-    scene.input.on('pointerdown', (p) => {
+    scene.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       sfx.init();
       this.touches[p.id] = p.x < HALF ? 'L' : 'R';
     });
-    scene.input.on('pointermove', (p) => {
+    scene.input.on('pointermove', (p: Phaser.Input.Pointer) => {
       if (p.isDown) this.touches[p.id] = p.x < HALF ? 'L' : 'R';
     });
-    scene.input.on('pointerup', (p) => {
+    scene.input.on('pointerup', (p: Phaser.Input.Pointer) => {
       delete this.touches[p.id];
     });
   }
 
   /** -1 = left/spread, 0 = idle, +1 = right/gather */
-  direction() {
+  direction(): number {
     let L = this.cursors.left.isDown || this.keyA.isDown;
     let R = this.cursors.right.isDown || this.keyD.isDown;
 
@@ -48,7 +55,7 @@ export class InputManager {
   }
 
   /** Any button pressed — for restart prompts */
-  anyPressed() {
+  anyPressed(): boolean {
     return (
       this.scene.input.activePointer.isDown ||
       this.direction() !== 0 ||
