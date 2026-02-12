@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dual-v1';
+const CACHE_NAME = 'dual-v2';
 
 const PRECACHE = [
   '/',
