@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="64" fill="#05050a"/>
+  <!-- left dot glow -->
+  <circle cx="180" cy="256" r="64" fill="#00e8ff" opacity="0.12"/>
+  <circle cx="180" cy="256" r="42" fill="#00e8ff" opacity="0.28"/>
+  <circle cx="180" cy="256" r="26" fill="#00e8ff"/>
+  <circle cx="174" cy="250" r="10" fill="#fff" opacity="0.35"/>
+  <!-- right dot glow -->
+  <circle cx="332" cy="256" r="64" fill="#ff0099" opacity="0.12"/>
+  <circle cx="332" cy="256" r="42" fill="#ff0099" opacity="0.28"/>
+  <circle cx="332" cy="256" r="26" fill="#ff0099"/>
+  <circle cx="326" cy="250" r="10" fill="#fff" opacity="0.35"/>
+  <!-- divider -->
+  <line x1="256" y1="64" x2="256" y2="448" stroke="#1a1a2e" stroke-width="2" opacity="0.4"/>
+  <!-- gate bars top -->
+  <rect x="132" y="110" width="4" height="40" rx="2" fill="#00e8ff" opacity="0.6"/>
+  <rect x="224" y="110" width="4" height="40" rx="2" fill="#00e8ff" opacity="0.6"/>
+  <rect x="284" y="110" width="4" height="40" rx="2" fill="#ff0099" opacity="0.6"/>
+  <rect x="376" y="110" width="4" height="40" rx="2" fill="#ff0099" opacity="0.6"/>
+  <!-- wall top left -->
+  <rect x="64" y="125" width="68" height="10" rx="2" fill="#151528" opacity="0.85"/>
+  <rect x="228" y="125" width="28" height="10" rx="2" fill="#151528" opacity="0.85"/>
+  <!-- wall top right -->
+  <rect x="256" y="125" width="28" height="10" rx="2" fill="#151528" opacity="0.85"/>
+  <rect x="380" y="125" width="68" height="10" rx="2" fill="#151528" opacity="0.85"/>
+  <!-- gate bars bottom -->
+  <rect x="148" y="362" width="4" height="40" rx="2" fill="#00e8ff" opacity="0.6"/>
+  <rect x="208" y="362" width="4" height="40" rx="2" fill="#00e8ff" opacity="0.6"/>
+  <rect x="300" y="362" width="4" height="40" rx="2" fill="#ff0099" opacity="0.6"/>
+  <rect x="392" y="362" width="4" height="40" rx="2" fill="#ff0099" opacity="0.6"/>
+  <!-- wall bottom left -->
+  <rect x="64" y="377" width="84" height="10" rx="2" fill="#151528" opacity="0.85"/>
+  <rect x="212" y="377" width="44" height="10" rx="2" fill="#151528" opacity="0.85"/>
+  <!-- wall bottom right -->
+  <rect x="256" y="377" width="44" height="10" rx="2" fill="#151528" opacity="0.85"/>
+  <rect x="396" y="377" width="52" height="10" rx="2" fill="#151528" opacity="0.85"/>
+</svg>

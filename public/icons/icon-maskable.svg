@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- maskable: safe zone is inner 80%, so keep content centered -->
+  <rect width="512" height="512" fill="#05050a"/>
+  <!-- left dot -->
+  <circle cx="200" cy="256" r="50" fill="#00e8ff" opacity="0.15"/>
+  <circle cx="200" cy="256" r="32" fill="#00e8ff" opacity="0.3"/>
+  <circle cx="200" cy="256" r="20" fill="#00e8ff"/>
+  <!-- right dot -->
+  <circle cx="312" cy="256" r="50" fill="#ff0099" opacity="0.15"/>
+  <circle cx="312" cy="256" r="32" fill="#ff0099" opacity="0.3"/>
+  <circle cx="312" cy="256" r="20" fill="#ff0099"/>
+  <!-- divider -->
+  <line x1="256" y1="128" x2="256" y2="384" stroke="#1a1a2e" stroke-width="2" opacity="0.4"/>
+</svg>
