@@ -3,7 +3,7 @@ import {
   W, H, HALF, DOT_R, DOT_Y, WALL_H,
   ACCEL, FRICTION, MAX_VEL, TRAIL_LEN,
   SPEED_INITIAL, SPEED_GROWTH, MAX_COMBO_MULTI,
-  C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY,
+  C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY, HI_LEVEL_KEY,
   THEMES, FLICKER_START_SCORE, FLICKER_INTERVAL_MIN,
   FLICKER_INTERVAL_MAX, FLICKER_DURATION,
   GHOST_RADIUS
@@ -12,6 +12,7 @@ import { sfx } from '../engine/SoundEngine';
 import { InputManager } from '../engine/InputManager';
 import { ObstaclePool } from '../engine/ObstaclePool';
 import { Renderer, DeathParticle } from '../engine/Renderer';
+import { uiManager } from '../engine/UIManager';
 
 interface Dot {
   x: number;
@@ -31,6 +32,7 @@ export class GameScene extends Phaser.Scene {
   private maxCombo!: number;
   private alive!: boolean;
   private hiScore!: number;
+  private hiLevel!: number;
   private newBest!: boolean;
   private shakeAmt!: number;
 
@@ -47,31 +49,20 @@ export class GameScene extends Phaser.Scene {
   private leftTrail!: number[];
   private rightTrail!: number[];
 
-  /* ghost power-up — pass through 1 wall */
+  /* ghost power-up */
   private ghostActive!: boolean;
-  private ghostTxt!: Phaser.GameObjects.Text;
 
   /* death */
   private deathParticles!: DeathParticle[];
   private deathTimer!: number;
   private deadSide!: 'left' | 'right' | null;
-  private goText!: Phaser.GameObjects.Text | null;
-  private goScore!: Phaser.GameObjects.Text;
-  private goHi!: Phaser.GameObjects.Text;
-  private goCombo!: Phaser.GameObjects.Text | undefined;
-  private retryText!: Phaser.GameObjects.Text | null;
+  private goShown!: boolean;
+  private retryShown!: boolean;
 
   /* subsystems */
   private input_!: InputManager;
   private pool!: ObstaclePool;
   private gfx!: Renderer;
-
-  /* HUD */
-  private scoreTxt!: Phaser.GameObjects.Text;
-  private comboTxt!: Phaser.GameObjects.Text;
-  private bestBanner!: Phaser.GameObjects.Text;
-  private themeTxt!: Phaser.GameObjects.Text;
-  private levelTxt!: Phaser.GameObjects.Text;
 
   constructor() {
     super('Game');
@@ -81,31 +72,32 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(C_BG);
 
     /* player state */
-    this.leftDot  = { x: HALF / 2, vx: 0 };
-    this.rightDot = { x: HALF + HALF / 2, vx: 0 };
+    this.leftDot  = { x: HALF / 2,        vx: 0 };
+    this.rightDot = { x: HALF + HALF / 2,  vx: 0 };
 
     /* scrolling / score */
     this.speed = SPEED_INITIAL;
-    this.dist = 0;
+    this.dist  = 0;
     this.score = 0;
     this.combo = 0;
     this.maxCombo = 0;
     this.alive = true;
     this.hiScore = parseInt(localStorage.getItem(HI_SCORE_KEY) || '0', 10);
+    this.hiLevel = parseInt(localStorage.getItem(HI_LEVEL_KEY) || '0', 10);
     this.newBest = false;
     this.shakeAmt = 0;
 
     /* theme tracking */
-    this.currentTheme = 0;
+    this.currentTheme    = 0;
     this.lastThemeTrigger = 0;
 
     /* flicker state */
-    this.flickerPhase = 0;
-    this.flickerTimer = 0;
+    this.flickerPhase  = 0;
+    this.flickerTimer  = 0;
     this.nextFlickerAt = this._randomFlickerDelay();
 
     /* trails */
-    this.leftTrail = [];
+    this.leftTrail  = [];
     this.rightTrail = [];
 
     /* ghost power-up */
@@ -113,14 +105,14 @@ export class GameScene extends Phaser.Scene {
 
     /* death */
     this.deathParticles = [];
-    this.deathTimer = 0;
-    this.deadSide = null;
-    this.goText = null;
-    this.retryText = null;
+    this.deathTimer     = 0;
+    this.deadSide       = null;
+    this.goShown        = false;
+    this.retryShown     = false;
 
     /* subsystems */
     this.input_ = new InputManager(this);
-    this.pool = new ObstaclePool();
+    this.pool   = new ObstaclePool();
     this.pool.seed(DOT_Y - 250, this.dist);
 
     this.gfx = new Renderer({
@@ -131,40 +123,8 @@ export class GameScene extends Phaser.Scene {
       fx:     this.add.graphics()
     });
 
-    /* HUD */
-    this.scoreTxt = this.add.text(W / 2, 28, '0', {
-      fontSize: '26px', fontFamily: 'monospace', color: '#ffffff', fontStyle: 'bold'
-    }).setOrigin(0.5).setAlpha(0.9).setDepth(10);
-
-    this.comboTxt = this.add.text(W / 2, 56, '', {
-      fontSize: '12px', fontFamily: 'monospace', color: '#ffaa00'
-    }).setOrigin(0.5).setAlpha(0).setDepth(10);
-
-    this.bestBanner = this.add.text(W / 2, 10, 'NEW BEST', {
-      fontSize: '10px', fontFamily: 'monospace', color: '#ffcc00'
-    }).setOrigin(0.5).setAlpha(0).setDepth(10);
-
-    /* theme name banner (shows briefly on transition) */
-    this.themeTxt = this.add.text(W / 2, H / 2, '', {
-      fontSize: '22px', fontFamily: 'monospace', color: '#ffffff', fontStyle: 'bold'
-    }).setOrigin(0.5).setAlpha(0).setDepth(15);
-
-    this.levelTxt = this.add.text(W / 2, H / 2 + 28, '', {
-      fontSize: '11px', fontFamily: 'monospace', color: '#888899'
-    }).setOrigin(0.5).setAlpha(0).setDepth(15);
-
-    this.ghostTxt = this.add.text(W / 2, DOT_Y - 50, 'GHOST!', {
-      fontSize: '16px', fontFamily: 'monospace', color: '#ffffff', fontStyle: 'bold'
-    }).setOrigin(0.5).setAlpha(0).setDepth(15);
-
-    /* direction hint labels */
-    this.add.text(W * 0.25, H - 22, 'SPREAD', {
-      fontSize: '9px', fontFamily: 'monospace', color: '#555577'
-    }).setOrigin(0.5).setAlpha(0.35).setDepth(10);
-
-    this.add.text(W * 0.75, H - 22, 'GATHER', {
-      fontSize: '9px', fontFamily: 'monospace', color: '#555577'
-    }).setOrigin(0.5).setAlpha(0.35).setDepth(10);
+    /* show HUD overlay */
+    uiManager.showHUD();
   }
 
   /* ---- helpers ---- */
@@ -181,12 +141,12 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    const dt = delta / 16.667;
+    const dt  = delta / 16.667;
     const dir = this.input_.direction();
 
     /* -- physics -- */
     this.leftDot.vx  += dir * ACCEL * dt;
-    this.rightDot.vx += -dir * ACCEL * dt;          // MIRRORED
+    this.rightDot.vx += -dir * ACCEL * dt;
     this.leftDot.vx  *= Math.pow(FRICTION, dt);
     this.rightDot.vx *= Math.pow(FRICTION, dt);
     this.leftDot.vx  = Phaser.Math.Clamp(this.leftDot.vx, -MAX_VEL, MAX_VEL);
@@ -199,7 +159,7 @@ export class GameScene extends Phaser.Scene {
     /* -- trails -- */
     this.leftTrail.push(this.leftDot.x);
     this.rightTrail.push(this.rightDot.x);
-    if (this.leftTrail.length > TRAIL_LEN) this.leftTrail.shift();
+    if (this.leftTrail.length  > TRAIL_LEN) this.leftTrail.shift();
     if (this.rightTrail.length > TRAIL_LEN) this.rightTrail.shift();
 
     /* -- scroll -- */
@@ -213,14 +173,13 @@ export class GameScene extends Phaser.Scene {
       const inBand = o.y > DOT_Y - WALL_H / 2 - DOT_R && o.y < DOT_Y + WALL_H / 2 + DOT_R;
 
       if (inBand && !o.ghostPassed) {
-        const leftHit = this.hitTest(this.leftDot.x, o.leftGapX, o.gapW);
+        const leftHit  = this.hitTest(this.leftDot.x,  o.leftGapX,  o.gapW);
         const rightHit = this.hitTest(this.rightDot.x, o.rightGapX, o.gapW);
 
         if (leftHit || rightHit) {
           if (this.ghostActive) {
-            /* ghost phases through this wall — mark it permanently safe */
             this.ghostActive = false;
-            o.ghostPassed = true;
+            o.ghostPassed    = true;
           } else {
             this.die(leftHit ? 'left' : 'right');
             return;
@@ -229,22 +188,21 @@ export class GameScene extends Phaser.Scene {
 
         /* near-miss */
         if (!this.ghostActive && !o.nearFlag) {
-          const lD = Math.abs(this.leftDot.x - o.leftGapX);
-          const rD = Math.abs(this.rightDot.x - o.rightGapX);
+          const lD   = Math.abs(this.leftDot.x  - o.leftGapX);
+          const rD   = Math.abs(this.rightDot.x - o.rightGapX);
           const edge = o.gapW / 2 - DOT_R;
           if (lD > edge - 6 || rD > edge - 6) {
-            o.nearFlag = true;
+            o.nearFlag    = true;
             this.shakeAmt = 3;
             sfx.play('near');
           }
         }
       }
 
-      /* -- ghost pickup (floats between walls) -- */
+      /* -- ghost pickup -- */
       if (o.ghostX != null && o.ghostY != null && !o.ghostCollected) {
-        /* check both dots against the ghost circle */
         const gr2 = (GHOST_RADIUS + DOT_R) * (GHOST_RADIUS + DOT_R);
-        const ldx = this.leftDot.x - o.ghostX;
+        const ldx = this.leftDot.x  - o.ghostX;
         const ldy = DOT_Y - o.ghostY;
         const rdx = this.rightDot.x - o.ghostX;
         const rdy = DOT_Y - o.ghostY;
@@ -252,8 +210,7 @@ export class GameScene extends Phaser.Scene {
           o.ghostCollected = true;
           this.ghostActive = true;
           sfx.play('combo');
-          this.ghostTxt.setAlpha(1);
-          this.tweens.add({ targets: this.ghostTxt, alpha: 0, duration: 600 });
+          uiManager.showGhostAlert();
         }
       }
 
@@ -261,13 +218,12 @@ export class GameScene extends Phaser.Scene {
         o.passed = true;
         this.combo++;
         this.maxCombo = Math.max(this.maxCombo, this.combo);
-        this.score += Math.min(this.combo, MAX_COMBO_MULTI);
+        this.score   += Math.min(this.combo, MAX_COMBO_MULTI);
         sfx.play('pass');
 
         if (this.score > this.hiScore && !this.newBest) {
           this.newBest = true;
-          this.bestBanner.setText('NEW BEST');
-          this.tweens.add({ targets: this.bestBanner, alpha: 1, duration: 250 });
+          uiManager.showNewBest();
         }
       }
     }
@@ -280,30 +236,21 @@ export class GameScene extends Phaser.Scene {
       this.shakeAmt = 6;
       sfx.play('combo');
 
-      /* show theme name */
       const theme = THEMES[themeIndex % THEMES.length];
-      this.themeTxt.setText(theme.name.toUpperCase());
-      this.themeTxt.setAlpha(1);
-      this.levelTxt.setText('LEVEL ' + (themeIndex + 1));
-      this.levelTxt.setAlpha(1);
-      this.tweens.add({ targets: this.themeTxt, alpha: 0, duration: 1800, delay: 400 });
-      this.tweens.add({ targets: this.levelTxt, alpha: 0, duration: 1800, delay: 400 });
+      uiManager.showBanner(theme.name, themeIndex + 1);
     }
 
     /* -- flicker effect -- */
     if (this.score >= FLICKER_START_SCORE) {
       this.flickerTimer += delta;
       if (this.flickerPhase > 0) {
-        /* flicker is active — decay */
-        this.flickerPhase = Math.max(0, this.flickerPhase - delta / FLICKER_DURATION);
-        this.gfx.flickering = this.flickerPhase > 0;
+        this.flickerPhase      = Math.max(0, this.flickerPhase - delta / FLICKER_DURATION);
+        this.gfx.flickering    = this.flickerPhase > 0;
       } else if (this.flickerTimer >= this.nextFlickerAt) {
-        /* trigger a new flicker */
-        this.flickerPhase = 1;
-        this.flickerTimer = 0;
-        this.nextFlickerAt = this._randomFlickerDelay();
-        this.gfx.flickering = true;
-        /* extra intensity at higher scores */
+        this.flickerPhase      = 1;
+        this.flickerTimer      = 0;
+        this.nextFlickerAt     = this._randomFlickerDelay();
+        this.gfx.flickering    = true;
         if (this.score > 400) this.shakeAmt = Math.max(this.shakeAmt, 2);
       }
     }
@@ -323,23 +270,18 @@ export class GameScene extends Phaser.Scene {
 
     /* direction hint arrows — fade out as score increases */
     const hintAlpha = Math.max(0, 1 - this.score / 50);
+    uiManager.setHintAlpha(hintAlpha);
     if (hintAlpha > 0) {
       this.gfx.drawDirectionHints(time, hintAlpha);
     }
 
-    /* flicker overlay on top */
     if (this.flickerPhase > 0) {
       this.gfx.drawFlicker(this.flickerPhase);
     }
 
-    /* HUD */
-    this.scoreTxt.setText(this.score.toString());
-    if (this.combo > 1) {
-      this.comboTxt.setText('\u00d7' + Math.min(this.combo, MAX_COMBO_MULTI));
-      this.comboTxt.setAlpha(0.8);
-    } else {
-      this.comboTxt.setAlpha(0);
-    }
+    /* -- HUD update -- */
+    uiManager.updateScore(this.score);
+    uiManager.updateCombo(this.combo);
   }
 
   /* ================================================================ */
@@ -354,17 +296,25 @@ export class GameScene extends Phaser.Scene {
   /*  DEATH                                                           */
   /* ================================================================ */
   private die(which: 'left' | 'right'): void {
-    this.alive = false;
+    this.alive    = false;
     this.deadSide = which;
-    this.combo = 0;
+    this.combo    = 0;
     this.gfx.flickering = false;
-    this.flickerPhase = 0;
+    this.flickerPhase   = 0;
     sfx.play('die');
     this.shakeAmt = 10;
 
+    /* save high score */
     if (this.score > this.hiScore) {
       this.hiScore = this.score;
       localStorage.setItem(HI_SCORE_KEY, this.score.toString());
+    }
+
+    /* save best level (1-indexed) */
+    const levelReached = this.currentTheme + 1;
+    if (levelReached > this.hiLevel) {
+      this.hiLevel = levelReached;
+      localStorage.setItem(HI_LEVEL_KEY, levelReached.toString());
     }
 
     /* burst particles */
@@ -384,7 +334,7 @@ export class GameScene extends Phaser.Scene {
 
   private updateDeath(delta: number, time: number): void {
     this.deathTimer += delta;
-    this.shakeAmt *= 0.92;
+    this.shakeAmt   *= 0.92;
 
     const sx = (Math.random() - 0.5) * this.shakeAmt;
     const sy = (Math.random() - 0.5) * this.shakeAmt;
@@ -393,7 +343,6 @@ export class GameScene extends Phaser.Scene {
     this.gfx.drawBg(this.dist, time, sx, sy, this.cameras.main);
     this.gfx.drawObstacles(this.pool.items, sx, sy, time);
 
-    /* dark overlay fade-in */
     const overlayAlpha = Math.min(0.65, this.deathTimer / 600);
     this.gfx.drawOverlay(overlayAlpha);
 
@@ -406,55 +355,29 @@ export class GameScene extends Phaser.Scene {
 
     /* particles */
     for (const p of this.deathParticles) {
-      p.x += p.vx; p.y += p.vy;
+      p.x  += p.vx; p.y  += p.vy;
       p.vx *= 0.97; p.vy *= 0.97;
       p.life -= 0.012;
     }
     this.gfx.drawParticles(this.deathParticles, sx, sy);
 
-    /* overlay text — created once */
-    if (this.deathTimer > 350 && !this.goText) {
-      this.goText = this.add.text(W / 2, H / 2 - 50, 'GAME OVER', {
-        fontSize: '30px', fontFamily: 'monospace', color: '#ffffff', fontStyle: 'bold'
-      }).setOrigin(0.5).setAlpha(0).setDepth(20);
-
-      this.goScore = this.add.text(W / 2, H / 2, 'Score: ' + this.score, {
-        fontSize: '22px', fontFamily: 'monospace', color: '#888899'
-      }).setOrigin(0.5).setAlpha(0).setDepth(20);
-
-      const hiLabel = this.newBest ? ('NEW BEST: ' + this.hiScore) : ('Best: ' + this.hiScore);
-      this.goHi = this.add.text(W / 2, H / 2 + 28, hiLabel, {
-        fontSize: '13px', fontFamily: 'monospace', color: this.newBest ? '#ffcc00' : '#555577'
-      }).setOrigin(0.5).setAlpha(0).setDepth(20);
-
-      if (this.maxCombo > 2) {
-        this.goCombo = this.add.text(W / 2, H / 2 + 52,
-          'Max combo: \u00d7' + Math.min(this.maxCombo, MAX_COMBO_MULTI), {
-            fontSize: '11px', fontFamily: 'monospace', color: '#ffaa00'
-          }).setOrigin(0.5).setAlpha(0).setDepth(20);
-      }
-
-      /* level reached */
-      if (this.currentTheme > 0) {
-        const tName = THEMES[this.currentTheme % THEMES.length].name.toUpperCase();
-        this.add.text(W / 2, H / 2 + 75, 'Reached: ' + tName + ' (Lv.' + (this.currentTheme + 1) + ')', {
-          fontSize: '10px', fontFamily: 'monospace', color: '#555577'
-        }).setOrigin(0.5).setAlpha(0).setDepth(20);
-      }
-
-      this.tweens.add({ targets: this.goText,  alpha: 1, duration: 300 });
-      this.tweens.add({ targets: this.goScore, alpha: 1, duration: 300, delay: 80 });
-      this.tweens.add({ targets: this.goHi,    alpha: 1, duration: 300, delay: 160 });
-      if (this.goCombo) {
-        this.tweens.add({ targets: this.goCombo, alpha: 1, duration: 300, delay: 240 });
-      }
+    /* game over screen — shown once after 350ms */
+    if (this.deathTimer > 350 && !this.goShown) {
+      this.goShown = true;
+      uiManager.showGameOver(
+        this.score,
+        this.hiScore,
+        this.newBest,
+        this.maxCombo,
+        this.currentTheme,
+        this.hiLevel
+      );
     }
 
-    if (this.deathTimer > 1000 && !this.retryText) {
-      this.retryText = this.add.text(W / 2, H / 2 + 120, 'TAP TO RETRY', {
-        fontSize: '13px', fontFamily: 'monospace', color: '#666677'
-      }).setOrigin(0.5).setDepth(20);
-      this.tweens.add({ targets: this.retryText, alpha: 0.25, duration: 550, yoyo: true, repeat: -1 });
+    /* retry prompt — shown after 1000ms */
+    if (this.deathTimer > 1000 && !this.retryShown) {
+      this.retryShown = true;
+      uiManager.showRetry();
     }
 
     /* restart */

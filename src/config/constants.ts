@@ -76,3 +76,5 @@ export const C_GHOST = 0xffffff;
 
 /* Storage */
 export const HI_SCORE_KEY = 'dual_hi';
+export const HI_LEVEL_KEY = 'dual_lvl';
+export const TOTAL_LEVELS  = 10; // number of themes
