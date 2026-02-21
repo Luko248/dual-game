@@ -23,40 +23,82 @@ canvas {
 
 /* ═══════════════════════════════════════════
    UI OVERLAY
-   Sits above the Phaser canvas.
-   #ui-inner is 400×640 virtual pixels,
-   scaled + translated by JS to match the canvas.
+   #ui-inner is a fixed 400×640 virtual canvas.
+
+   Scale uses svb/svi (small viewport block/inline)
+   so the overlay is ALWAYS contained within the
+   safe viewport on any device — even when the
+   mobile address bar is visible.
+
+   ❌  Never use 100vh / window.innerHeight — overflows on mobile
+   ✅  svi = safe viewport width  (browser chrome included)
+   ✅  svb = safe viewport height (browser chrome included)
+
+   scale: min(100svi / 400px, 100svb / 640px)
+     → unitless ratio: length ÷ length = number
+     → exactly mirrors Phaser's FIT mode maths
+     → pure CSS, zero JS resize listeners needed
 ═══════════════════════════════════════════ */
 
 #ui-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  display: grid;
+  place-items: center;
 }
 
 #ui-inner {
+  position: relative;
+  width: 400px;
+  height: 640px;
+  /* CSS-only FIT scale — always contained in the safe viewport */
+  scale: min(
+    calc(100svi / 400px),
+    calc(100svb / 640px)
+  );
+}
+
+/* Base font inherited by all overlay text */
+#ui-inner,
+#ui-inner * {
+  font-family: 'Courier New', Courier, monospace;
+  user-select: none;
+  -webkit-user-select: none;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ── Container layers
+   Must match #ui-inner size so that children's
+   left: 50% resolves to 50% of 400px = 200px  ── */
+#menu-ui,
+#game-hud,
+#gameover-ui {
   position: absolute;
   top: 0;
   left: 0;
   width: 400px;
   height: 640px;
-  /* transform set by UIManager.updateScale() */
 }
 
-/* shared base for all text */
-#ui-inner * {
-  font-family: 'Courier New', Courier, monospace;
+/* ── All individual text nodes use absolute positioning ── */
+#menu-title, #menu-tagline, #menu-howto-header,
+#menu-spread, #menu-gather, #menu-survive,
+#menu-controls, #menu-ghost-row,
+#menu-best, #menu-lvl, #menu-prompt,
+#hud-best-banner, #hud-score, #hud-combo,
+#hud-hint-spread, #hud-hint-gather,
+#ghost-alert,
+#go-title, #go-score, #go-best,
+#go-combo, #go-level, #go-retry {
   position: absolute;
-  white-space: nowrap;
-  line-height: 1;
-  user-select: none;
-  -webkit-user-select: none;
 }
 
 .ui-hidden { display: none !important; }
 
-/* ── fade-in animation ── */
+/* ── Animations ── */
 @keyframes ui-fadein {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -65,7 +107,6 @@ canvas {
   animation: ui-fadein 0.3s ease-out forwards;
 }
 
-/* ── pulse animation ── */
 @keyframes ui-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.25; }
@@ -74,7 +115,11 @@ canvas {
   animation: ui-pulse 1.4s ease-in-out infinite;
 }
 
-/* ── theme banner ── */
+@keyframes ui-prompt-breathe {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
 @keyframes ui-banner {
   0%   { opacity: 0; }
   15%  { opacity: 1; }
@@ -85,7 +130,6 @@ canvas {
   animation: ui-banner 2.2s ease-out forwards;
 }
 
-/* ── ghost alert ── */
 @keyframes ui-ghost {
   0%   { opacity: 1; }
   100% { opacity: 0; }
@@ -94,26 +138,30 @@ canvas {
   animation: ui-ghost 0.7s ease-out forwards;
 }
 
-/* ── new best color ── */
 .ui-new-best { color: #ffcc00 !important; }
 
 
 /* ═══════════════════════════════════════════
    MENU SCREEN
+   Coordinates match Phaser's 400×640 space.
+   left: 50% = 200px (center) inside the
+   400px-wide #menu-ui container.
 ═══════════════════════════════════════════ */
 
 #menu-title {
-  top: 120px; left: 50%;
+  top: 112px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 90px;
   font-weight: bold;
   color: #ffffff;
   letter-spacing: 0.06em;
-  text-shadow: 0 0 30px rgba(255,255,255,0.3);
+  text-shadow: 0 0 30px rgba(255,255,255,0.25);
 }
 
 #menu-tagline {
-  top: 200px; left: 50%;
+  top: 204px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 19px;
   color: #555577;
@@ -121,57 +169,91 @@ canvas {
 }
 
 #menu-howto-header {
-  top: 314px; left: 50%;
+  top: 314px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 14px;
   font-weight: bold;
   color: #555577;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
 }
 
 #menu-spread {
-  top: 342px; left: 50%;
+  top: 342px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 16px;
   color: #444466;
-  letter-spacing: 0.05em;
-}
-
-#menu-gather {
-  top: 364px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 16px;
-  color: #444466;
-  letter-spacing: 0.05em;
-}
-
-#menu-survive {
-  top: 394px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 16px;
-  color: #444466;
-  letter-spacing: 0.05em;
-}
-
-#menu-controls {
-  top: 428px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
-  color: #333355;
   letter-spacing: 0.04em;
 }
 
-/* aligns with ghost icon drawn by Phaser at x=110, y=462 */
-#menu-ghost-text {
-  top: 462px; left: 128px;
-  transform: translateY(-50%);
+#menu-gather {
+  top: 364px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  color: #444466;
+  letter-spacing: 0.04em;
+}
+
+#menu-survive {
+  top: 394px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  color: #444466;
+  letter-spacing: 0.04em;
+}
+
+#menu-controls {
+  top: 428px;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 14px;
-  color: #333355;
+  color: #444466;
+  letter-spacing: 0.04em;
+}
+
+/* Ghost row: icon + label, centered as a flex row */
+#menu-ghost-row {
+  top: 462px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* CSS concentric circles mimicking the Phaser ghost icon */
+#menu-ghost-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  position: relative;
+}
+#menu-ghost-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.7);
+  box-shadow:
+    0 0 0 3.5px rgba(255,255,255,0.35),
+    0 0 0 7.5px rgba(255,255,255,0.12);
+}
+
+#menu-ghost-text {
+  font-size: 14px;
+  color: #444466;
   letter-spacing: 0.04em;
 }
 
 #menu-best {
-  top: 540px; left: 50%;
+  top: 538px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 23px;
   color: #555577;
@@ -179,7 +261,8 @@ canvas {
 }
 
 #menu-lvl {
-  top: 568px; left: 50%;
+  top: 568px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 16px;
   color: #444466;
@@ -187,11 +270,13 @@ canvas {
 }
 
 #menu-prompt {
-  top: 590px; left: 50%;
+  top: 592px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 18px;
   color: #777777;
   letter-spacing: 0.1em;
+  animation: ui-prompt-breathe 2.8s ease-in-out infinite;
 }
 
 
@@ -200,18 +285,20 @@ canvas {
 ═══════════════════════════════════════════ */
 
 #hud-best-banner {
-  top: 10px; left: 50%;
+  top: 10px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 13px;
   font-weight: bold;
   color: #ffcc00;
   letter-spacing: 0.15em;
   text-shadow: 0 0 10px rgba(255,204,0,0.6);
-  /* opacity controlled by JS */
+  opacity: 0;
 }
 
 #hud-score {
-  top: 28px; left: 50%;
+  top: 26px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 33px;
   font-weight: bold;
@@ -221,46 +308,53 @@ canvas {
 }
 
 #hud-combo {
-  top: 68px; left: 50%;
+  top: 66px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 15px;
   color: #ffaa00;
   letter-spacing: 0.08em;
-  /* opacity controlled by JS */
+  opacity: 0;
 }
 
-/* direction hints — bottom bar */
+/* W*0.25 = 100, W*0.75 = 300 */
 #hud-hint-spread {
-  top: 618px; left: 100px;
+  top: 618px;
+  left: 100px;
   transform: translateX(-50%);
   font-size: 11px;
   color: #555577;
   letter-spacing: 0.12em;
-  /* opacity controlled by JS */
 }
 
 #hud-hint-gather {
-  top: 618px; left: 300px;
+  top: 618px;
+  left: 300px;
   transform: translateX(-50%);
   font-size: 11px;
   color: #555577;
   letter-spacing: 0.12em;
-  /* opacity controlled by JS */
 }
 
 
 /* ═══════════════════════════════════════════
    THEME TRANSITION BANNER
+   Positioned directly in #ui-inner (not in a
+   container div) so top/left % = % of 400×640.
 ═══════════════════════════════════════════ */
 
 #game-banner {
-  top: 50%; left: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 #banner-theme {
-  position: relative; /* override absolute from * rule */
   font-size: 28px;
   font-weight: bold;
   color: #ffffff;
@@ -269,23 +363,20 @@ canvas {
 }
 
 #banner-level {
-  position: relative;
-  top: 10px;
   font-size: 14px;
   color: #888899;
-  letter-spacing: 0.15em;
-  text-align: center;
-  left: auto;
+  letter-spacing: 0.18em;
 }
 
 
 /* ═══════════════════════════════════════════
    GHOST ALERT
+   DOT_Y = H-130 = 510 → alert at 510-50 = 460
 ═══════════════════════════════════════════ */
 
 #ghost-alert {
-  /* DOT_Y=510, so DOT_Y-50=460 */
-  top: 460px; left: 50%;
+  top: 460px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 20px;
   font-weight: bold;
@@ -297,63 +388,67 @@ canvas {
 
 /* ═══════════════════════════════════════════
    GAME OVER SCREEN
+   H/2 = 320
 ═══════════════════════════════════════════ */
 
-/* H/2 = 320, so GAME OVER at 270 */
 #go-title {
-  top: 270px; left: 50%;
+  top: 268px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 38px;
   font-weight: bold;
   color: #ffffff;
   letter-spacing: 0.1em;
-  text-shadow: 0 0 24px rgba(255,255,255,0.3);
+  text-shadow: 0 0 24px rgba(255,255,255,0.25);
+  opacity: 0;
 }
 
 #go-score {
-  top: 328px; left: 50%;
+  top: 328px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 28px;
   color: #888899;
   letter-spacing: 0.05em;
+  opacity: 0;
 }
 
 #go-best {
-  top: 362px; left: 50%;
+  top: 364px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 16px;
   color: #555577;
   letter-spacing: 0.08em;
+  opacity: 0;
 }
 
 #go-combo {
-  top: 386px; left: 50%;
+  top: 390px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 14px;
   color: #ffaa00;
   letter-spacing: 0.06em;
+  opacity: 0;
 }
 
 #go-level {
-  top: 408px; left: 50%;
+  top: 412px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 13px;
   color: #555577;
   letter-spacing: 0.05em;
-}
-
-#go-maxlvl {
-  top: 428px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 13px;
-  color: #444466;
-  letter-spacing: 0.1em;
+  opacity: 0;
 }
 
 #go-retry {
-  top: 460px; left: 50%;
+  top: 456px;
+  left: 50%;
   transform: translateX(-50%);
   font-size: 16px;
   color: #666677;
   letter-spacing: 0.12em;
+  animation: ui-prompt-breathe 2.8s ease-in-out infinite;
 }

@@ -369,8 +369,7 @@ export class GameScene extends Phaser.Scene {
         this.hiScore,
         this.newBest,
         this.maxCombo,
-        this.currentTheme,
-        this.hiLevel
+        this.currentTheme
       );
     }
 

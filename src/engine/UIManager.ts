@@ -1,6 +1,6 @@
 import { THEMES, TOTAL_LEVELS, MAX_COMBO_MULTI } from '../config/constants';
 
-/* Coordinate space matches Phaser's 400×640 virtual canvas */
+/* Virtual canvas size — matches Phaser's 400×640 space */
 const VW = 400;
 const VH = 640;
 
@@ -11,7 +11,6 @@ class UIManager {
   private menuUI!: HTMLElement;
   private menuBest!: HTMLElement;
   private menuLvl!: HTMLElement;
-  private menuPrompt!: HTMLElement;
 
   /* game hud */
   private gameHUD!: HTMLElement;
@@ -38,7 +37,6 @@ class UIManager {
   private goBest!: HTMLElement;
   private goCombo!: HTMLElement;
   private goLevel!: HTMLElement;
-  private goMaxLvl!: HTMLElement;
   private goRetry!: HTMLElement;
 
   init(): void {
@@ -46,7 +44,6 @@ class UIManager {
     this.menuUI        = document.getElementById('menu-ui')!;
     this.menuBest      = document.getElementById('menu-best')!;
     this.menuLvl       = document.getElementById('menu-lvl')!;
-    this.menuPrompt    = document.getElementById('menu-prompt')!;
     this.gameHUD       = document.getElementById('game-hud')!;
     this.hudScore      = document.getElementById('hud-score')!;
     this.hudCombo      = document.getElementById('hud-combo')!;
@@ -63,18 +60,14 @@ class UIManager {
     this.goBest        = document.getElementById('go-best')!;
     this.goCombo       = document.getElementById('go-combo')!;
     this.goLevel       = document.getElementById('go-level')!;
-    this.goMaxLvl      = document.getElementById('go-maxlvl')!;
     this.goRetry       = document.getElementById('go-retry')!;
 
     this.updateScale();
   }
 
   updateScale(): void {
-    const scale = Math.min(window.innerWidth / VW, window.innerHeight / VH);
-    const tx = (window.innerWidth  - VW * scale) / 2;
-    const ty = (window.innerHeight - VH * scale) / 2;
-    this.inner.style.transform       = `translate(${tx}px,${ty}px) scale(${scale})`;
-    this.inner.style.transformOrigin = '0 0';
+    /* Scale is handled entirely by CSS using svi/svb viewport units.
+       No JS needed — kept as no-op for call-site compatibility. */
   }
 
   private hideAll(): void {
@@ -85,29 +78,29 @@ class UIManager {
     this.gameoverUI.classList.add('ui-hidden');
   }
 
-  /* ---- MENU ---- */
+  /* ------------------------------------------------------------------ */
+  /*  MENU                                                               */
+  /* ------------------------------------------------------------------ */
 
   showMenu(hiScore: number, hiLevel: number): void {
     this.hideAll();
-    this.menuBest.textContent = hiScore > 0 ? 'BEST: ' + hiScore : '';
-    this.menuLvl.textContent  = hiLevel > 0 ? 'LVL ' + hiLevel + '\u00a0/\u00a0' + TOTAL_LEVELS : '';
+    this.menuBest.textContent = hiScore > 0 ? 'BEST:\u00a0' + hiScore : '';
+    this.menuLvl.textContent  = hiLevel > 0 ? 'LVL\u00a0' + hiLevel + '\u00a0/\u00a0' + TOTAL_LEVELS : '';
     this.menuUI.classList.remove('ui-hidden');
-    /* pulse the prompt */
-    this.menuPrompt.classList.remove('ui-pulse');
-    void this.menuPrompt.offsetWidth;
-    this.menuPrompt.classList.add('ui-pulse');
   }
 
   hideMenu(): void {
     this.menuUI.classList.add('ui-hidden');
   }
 
-  /* ---- HUD ---- */
+  /* ------------------------------------------------------------------ */
+  /*  GAME HUD                                                           */
+  /* ------------------------------------------------------------------ */
 
   showHUD(): void {
     this.hideAll();
-    this.hudScore.textContent = '0';
-    this.hudCombo.style.opacity = '0';
+    this.hudScore.textContent        = '0';
+    this.hudCombo.style.opacity      = '0';
     this.hudBestBanner.style.opacity = '0';
     this.hudHintSpread.style.opacity = '0.35';
     this.hudHintGather.style.opacity = '0.35';
@@ -120,7 +113,7 @@ class UIManager {
 
   updateCombo(combo: number): void {
     if (combo > 1) {
-      this.hudCombo.textContent = '\u00d7' + Math.min(combo, MAX_COMBO_MULTI);
+      this.hudCombo.textContent   = '\u00d7' + Math.min(combo, MAX_COMBO_MULTI);
       this.hudCombo.style.opacity = '0.8';
     } else {
       this.hudCombo.style.opacity = '0';
@@ -137,12 +130,14 @@ class UIManager {
     this.hudHintGather.style.opacity = v;
   }
 
-  /* ---- THEME BANNER ---- */
+  /* ------------------------------------------------------------------ */
+  /*  THEME BANNER                                                       */
+  /* ------------------------------------------------------------------ */
 
   showBanner(themeName: string, level: number): void {
     this.bannerTheme.textContent = themeName.toUpperCase();
-    this.bannerLevel.textContent = 'LEVEL ' + level;
-    /* re-trigger animation */
+    this.bannerLevel.textContent = 'LEVEL\u00a0' + level;
+    /* re-trigger CSS animation */
     this.gameBanner.classList.remove('ui-hidden', 'ui-banner-anim');
     void this.gameBanner.offsetWidth;
     this.gameBanner.classList.add('ui-banner-anim');
@@ -152,7 +147,9 @@ class UIManager {
     }, 2200);
   }
 
-  /* ---- GHOST ALERT ---- */
+  /* ------------------------------------------------------------------ */
+  /*  GHOST ALERT                                                        */
+  /* ------------------------------------------------------------------ */
 
   showGhostAlert(): void {
     this.ghostAlert.classList.remove('ui-hidden', 'ui-ghost-anim');
@@ -164,20 +161,21 @@ class UIManager {
     }, 700);
   }
 
-  /* ---- GAME OVER ---- */
+  /* ------------------------------------------------------------------ */
+  /*  GAME OVER                                                          */
+  /* ------------------------------------------------------------------ */
 
   showGameOver(
     score: number,
     hiScore: number,
     isNewBest: boolean,
     maxCombo: number,
-    currentTheme: number,
-    hiLevel: number
+    currentTheme: number
   ): void {
     this.goScore.textContent = 'Score:\u00a0' + score;
 
     if (isNewBest) {
-      this.goBest.textContent = 'NEW BEST:\u00a0' + hiScore;
+      this.goBest.textContent = 'NEW\u00a0BEST:\u00a0' + hiScore;
       this.goBest.classList.add('ui-new-best');
     } else {
       this.goBest.textContent = 'Best:\u00a0' + hiScore;
@@ -185,7 +183,7 @@ class UIManager {
     }
 
     if (maxCombo > 2) {
-      this.goCombo.textContent = 'Max combo:\u00a0\u00d7' + Math.min(maxCombo, MAX_COMBO_MULTI);
+      this.goCombo.textContent = 'Max\u00a0combo:\u00a0\u00d7' + Math.min(maxCombo, MAX_COMBO_MULTI);
       this.goCombo.style.display = '';
     } else {
       this.goCombo.style.display = 'none';
@@ -193,29 +191,23 @@ class UIManager {
 
     if (currentTheme > 0) {
       const tName = THEMES[currentTheme % THEMES.length].name.toUpperCase();
-      this.goLevel.textContent = 'Reached:\u00a0' + tName + '\u00a0(Lv.\u00a0' + (currentTheme + 1) + '\u00a0/\u00a0' + TOTAL_LEVELS + ')';
+      this.goLevel.textContent = tName + '\u00a0\u2014\u00a0Lv.\u00a0' + (currentTheme + 1) + '\u00a0/\u00a0' + TOTAL_LEVELS;
       this.goLevel.style.display = '';
     } else {
       this.goLevel.style.display = 'none';
     }
 
-    if (hiLevel > 0) {
-      this.goMaxLvl.textContent = 'Best level:\u00a0' + hiLevel + '\u00a0/\u00a0' + TOTAL_LEVELS;
-      this.goMaxLvl.style.display = '';
-    } else {
-      this.goMaxLvl.style.display = 'none';
-    }
+    /* staggered fade-in */
+    const seq = [this.goTitle, this.goScore, this.goBest, this.goCombo, this.goLevel];
+    seq.forEach(el => {
+      el.style.opacity = '0';
+      el.classList.remove('ui-fadein');
+    });
 
     this.goRetry.style.display = 'none';
-    this.goRetry.classList.remove('ui-pulse');
-
-    /* staggered fade-in */
-    const seq = [this.goTitle, this.goScore, this.goBest, this.goCombo, this.goLevel, this.goMaxLvl];
-    seq.forEach(el => { el.style.opacity = '0'; el.classList.remove('ui-fadein'); });
-
     this.gameoverUI.classList.remove('ui-hidden');
 
-    const delays = [0, 80, 160, 240, 320, 400];
+    const delays = [0, 80, 160, 240, 320];
     seq.forEach((el, i) => {
       if (el.style.display === 'none') return;
       setTimeout(() => {
@@ -227,12 +219,11 @@ class UIManager {
 
   showRetry(): void {
     this.goRetry.style.display = '';
-    void this.goRetry.offsetWidth;
-    this.goRetry.classList.add('ui-pulse');
   }
 
   hideGameOver(): void {
     this.gameoverUI.classList.add('ui-hidden');
+    this.goRetry.style.display = 'none';
   }
 }
 

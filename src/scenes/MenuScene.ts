@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { W, DOT_R, C_BG, C_LEFT, C_RIGHT, C_GHOST, HI_SCORE_KEY, HI_LEVEL_KEY } from '../config/constants';
+import { W, DOT_R, C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY, HI_LEVEL_KEY } from '../config/constants';
 import { sfx } from '../engine/SoundEngine';
 import { uiManager } from '../engine/UIManager';
 
@@ -25,13 +25,6 @@ export class MenuScene extends Phaser.Scene {
     gfx.moveTo(cx - 80, 326);
     gfx.lineTo(cx + 80, 326);
     gfx.strokePath();
-
-    /* ---- ghost power-up icon (aligns with #menu-ghost-text at y=462) ---- */
-    const ghostIconX = cx - 90; // = 110
-    const ghostRow   = 462;
-    gfx.fillStyle(C_GHOST, 0.12); gfx.fillCircle(ghostIconX, ghostRow, 10);
-    gfx.fillStyle(C_GHOST, 0.35); gfx.fillCircle(ghostIconX, ghostRow, 6);
-    gfx.fillStyle(0xffffff, 0.7); gfx.fillCircle(ghostIconX, ghostRow, 2.5);
 
     /* ---- HTML overlay ---- */
     const hiScore = parseInt(localStorage.getItem(HI_SCORE_KEY) || '0', 10);

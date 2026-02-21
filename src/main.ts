@@ -20,4 +20,3 @@ new Phaser.Game({
 
 /* ---- UI Overlay ---- */
 uiManager.init();
-window.addEventListener('resize', () => uiManager.updateScale());
