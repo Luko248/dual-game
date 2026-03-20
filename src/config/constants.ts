@@ -74,6 +74,19 @@ export const GHOST_SPAWN_CHANCE = 0.08;
 export const GHOST_RADIUS = 12;
 export const C_GHOST = 0xffffff;
 
+/* Bullet time power-up */
+export const BULLET_MIN_LEVEL = 4;       // theme index (0-based) — starts at level 4
+export const BULLET_SPAWN_CHANCE = 0.06;
+export const BULLET_DURATION = 3000;     // ms
+export const BULLET_SPEED_MULT = 0.3;    // speed multiplier during bullet time
+export const BULLET_TRANSITION = 400;    // ms for speed ramp in/out
+export const BULLET_RADIUS = 10;
+export const C_BULLET = 0x44ff66;        // green
+
+/* Intro phase */
+export const INTRO_DURATION = 3000;     // ms — slow start before full speed
+export const INTRO_SPEED_MULT = 0.3;    // speed multiplier during intro
+
 /* Storage */
 export const HI_SCORE_KEY = 'dual_hi';
 export const HI_LEVEL_KEY = 'dual_lvl';

@@ -1,6 +1,7 @@
 import {
   W, H, HALF, DOT_R, WALL_H, GATE_W, GATE_EXTEND,
   C_LEFT, C_RIGHT, C_GHOST, GHOST_RADIUS,
+  C_BULLET, BULLET_RADIUS,
   THEMES, Theme
 } from '../config/constants';
 import type { Obstacle } from './ObstaclePool';
@@ -228,22 +229,6 @@ export class Renderer {
     g.fillCircle(x, y, r * 0.5);
   }
 
-  /* ---- direction indicators at bottom ---- */
-  drawDirectionHints(time: number, alpha: number): void {
-    const g = this.l.fx;
-    const y = H - 38;
-    const a = alpha * (0.25 + 0.08 * Math.sin(time * 0.003));
-
-    /* Gather arrows: → ← pointing inward at center */
-    const cx = W * 0.5;
-    /* right-pointing arrow (from left) */
-    g.fillStyle(C_LEFT, a);
-    g.fillTriangle(cx - 6, y, cx - 18, y - 6, cx - 18, y + 6);
-    /* left-pointing arrow (from right) */
-    g.fillStyle(C_RIGHT, a);
-    g.fillTriangle(cx + 6, y, cx + 18, y - 6, cx + 18, y + 6);
-  }
-
   /* ---- ghost power-ups ---- */
   drawGhosts(obstacles: Obstacle[], sx: number, sy: number, time: number): void {
     const g = this.l.fx;
@@ -266,6 +251,31 @@ export class Renderer {
       /* bright center */
       g.fillStyle(0xffffff, 0.7);
       g.fillCircle(x, y, r * 0.4);
+    }
+  }
+
+  /* ---- bullet time pickups ---- */
+  drawBulletPickups(obstacles: Obstacle[], sx: number, sy: number, time: number): void {
+    const g = this.l.fx;
+    for (const o of obstacles) {
+      if (o.bulletX == null || o.bulletY == null || o.bulletCollected) continue;
+      const x = o.bulletX + sx;
+      const y = o.bulletY + sy;
+      const pulse = 0.5 + 0.3 * Math.sin(time * 0.007);
+      const r = BULLET_RADIUS + 2 * Math.sin(time * 0.005);
+
+      /* outer glow */
+      g.fillStyle(C_BULLET, 0.06 * pulse);
+      g.fillCircle(x, y, r * 2.8);
+      /* mid glow */
+      g.fillStyle(C_BULLET, 0.15 * pulse);
+      g.fillCircle(x, y, r * 1.6);
+      /* core */
+      g.fillStyle(C_BULLET, 0.5 * pulse);
+      g.fillCircle(x, y, r);
+      /* bright center */
+      g.fillStyle(0xffffff, 0.6);
+      g.fillCircle(x, y, r * 0.35);
     }
   }
 

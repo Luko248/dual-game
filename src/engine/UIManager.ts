@@ -17,7 +17,14 @@ class UIManager {
   private hudScore!: HTMLElement;
   private hudCombo!: HTMLElement;
   private hudBestBanner!: HTMLElement;
-  private hudHint!: HTMLElement;
+  /* intro hint */
+  private introHint!: HTMLElement;
+
+  /* power-up indicators */
+  private hudGhost!: HTMLElement;
+  private hudGhostCount!: HTMLElement;
+  private hudBullet!: HTMLElement;
+  private hudBulletTimer!: HTMLElement;
 
   /* theme banner */
   private gameBanner!: HTMLElement;
@@ -47,7 +54,11 @@ class UIManager {
     this.hudScore      = document.getElementById('hud-score')!;
     this.hudCombo      = document.getElementById('hud-combo')!;
     this.hudBestBanner = document.getElementById('hud-best-banner')!;
-    this.hudHint       = document.getElementById('hud-hint')!;
+    this.introHint     = document.getElementById('intro-hint')!;
+    this.hudGhost      = document.getElementById('hud-ghost')!;
+    this.hudGhostCount = document.getElementById('hud-ghost-count')!;
+    this.hudBullet     = document.getElementById('hud-bullet')!;
+    this.hudBulletTimer = document.getElementById('hud-bullet-timer')!;
     this.gameBanner    = document.getElementById('game-banner')!;
     this.bannerTheme   = document.getElementById('banner-theme')!;
     this.bannerLevel   = document.getElementById('banner-level')!;
@@ -71,6 +82,8 @@ class UIManager {
   private hideAll(): void {
     this.menuUI.classList.add('ui-hidden');
     this.gameHUD.classList.add('ui-hidden');
+    this.introHint.classList.add('ui-hidden');
+    this.introHint.classList.remove('intro-fading');
     this.gameBanner.classList.add('ui-hidden');
     this.ghostAlert.classList.add('ui-hidden');
     this.gameoverUI.classList.add('ui-hidden');
@@ -100,8 +113,10 @@ class UIManager {
     this.hudScore.textContent        = '0';
     this.hudCombo.style.opacity      = '0';
     this.hudBestBanner.style.opacity = '0';
-    this.hudHint.style.opacity       = '0.35';
+    this.hudGhost.classList.add('ui-hidden');
+    this.hudBullet.classList.add('ui-hidden');
     this.gameHUD.classList.remove('ui-hidden');
+    this.introHint.classList.remove('ui-hidden', 'intro-fading');
   }
 
   updateScore(score: number): void {
@@ -121,8 +136,41 @@ class UIManager {
     this.hudBestBanner.style.opacity = '1';
   }
 
-  setHintAlpha(alpha: number): void {
-    this.hudHint.style.opacity = (alpha * 0.35).toString();
+  fadeOutIntroHint(): void {
+    this.introHint.classList.add('intro-fading');
+    setTimeout(() => {
+      this.introHint.classList.add('ui-hidden');
+    }, 600);
+  }
+
+  hideIntroHint(): void {
+    this.introHint.classList.add('ui-hidden');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  GHOST CHARGES                                                       */
+  /* ------------------------------------------------------------------ */
+
+  updateGhostCharges(charges: number): void {
+    if (charges > 0) {
+      this.hudGhostCount.textContent = charges.toString();
+      this.hudGhost.classList.remove('ui-hidden');
+    } else {
+      this.hudGhost.classList.add('ui-hidden');
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  BULLET TIME                                                         */
+  /* ------------------------------------------------------------------ */
+
+  updateBulletTime(remaining: number): void {
+    if (remaining > 0) {
+      this.hudBulletTimer.textContent = (remaining / 1000).toFixed(1);
+      this.hudBullet.classList.remove('ui-hidden');
+    } else {
+      this.hudBullet.classList.add('ui-hidden');
+    }
   }
 
   /* ------------------------------------------------------------------ */

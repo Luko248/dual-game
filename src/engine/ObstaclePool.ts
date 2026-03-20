@@ -4,7 +4,8 @@ import {
   GAP_INITIAL, GAP_MIN, GAP_SHRINK,
   SPACING_INITIAL, SPACING_MIN, SPACING_SHRINK,
   OFFSET_GROWTH, H,
-  GHOST_MIN_LEVEL, GHOST_SPAWN_CHANCE
+  GHOST_MIN_LEVEL, GHOST_SPAWN_CHANCE,
+  BULLET_MIN_LEVEL, BULLET_SPAWN_CHANCE
 } from '../config/constants';
 
 export interface Obstacle {
@@ -18,6 +19,9 @@ export interface Obstacle {
   ghostX?: number;        // x-center of ghost pickup
   ghostY?: number;        // y-center (between this wall and the one below)
   ghostCollected?: boolean;
+  bulletX?: number;       // x-center of bullet time pickup
+  bulletY?: number;       // y-center
+  bulletCollected?: boolean;
 }
 
 /**
@@ -57,17 +61,27 @@ export class ObstaclePool {
 
     const ob: Obstacle = { y, leftGapX, rightGapX, gapW: gap, passed: false, nearFlag: false };
 
-    /* ghost power-up — floats in open space below this wall */
     const level = Math.floor(dist / 600);
+    const sp = this.spacing(dist);
+
+    /* ghost power-up — floats in open space below this wall */
     if (level >= GHOST_MIN_LEVEL && Math.random() < GHOST_SPAWN_CHANCE) {
-      const sp = this.spacing(dist);
-      ob.ghostY = y + sp * 0.5;  // halfway to the next wall below
-      /* random x in either lane, avoiding edges */
+      ob.ghostY = y + sp * 0.5;
       const inLeft = Math.random() < 0.5;
       ob.ghostX = inLeft
         ? Phaser.Math.Between(DOT_R + 10, HALF - DOT_R - 10)
         : Phaser.Math.Between(HALF + DOT_R + 10, W - DOT_R - 10);
       ob.ghostCollected = false;
+    }
+
+    /* bullet time power-up — only if no ghost on this obstacle */
+    if (ob.ghostX == null && level >= BULLET_MIN_LEVEL && Math.random() < BULLET_SPAWN_CHANCE) {
+      ob.bulletY = y + sp * 0.5;
+      const inLeft = Math.random() < 0.5;
+      ob.bulletX = inLeft
+        ? Phaser.Math.Between(DOT_R + 10, HALF - DOT_R - 10)
+        : Phaser.Math.Between(HALF + DOT_R + 10, W - DOT_R - 10);
+      ob.bulletCollected = false;
     }
 
     this.items.push(ob);
@@ -78,6 +92,7 @@ export class ObstaclePool {
     for (const o of this.items) {
       o.y += amount;
       if (o.ghostY != null) o.ghostY += amount;
+      if (o.bulletY != null) o.bulletY += amount;
     }
 
     this.nextY += amount;

@@ -49,7 +49,25 @@
         <div id="hud-best-banner">NEW BEST</div>
         <div id="hud-score">0</div>
         <div id="hud-combo"></div>
-        <div id="hud-hint">TAP TO GATHER</div>
+        <!-- Ghost charges indicator (top-left) -->
+        <div id="hud-ghost" class="ui-hidden">
+          <div id="hud-ghost-icon"></div>
+          <div id="hud-ghost-count">1</div>
+        </div>
+        <!-- Bullet time indicator (top-right) -->
+        <div id="hud-bullet" class="ui-hidden">
+          <div id="hud-bullet-timer">3.0</div>
+          <div id="hud-bullet-icon"></div>
+        </div>
+      </div>
+
+      <!-- ═══ INTRO HINT (large circle + text, shown first 3s) ═══ -->
+      <div id="intro-hint" class="ui-hidden">
+        <div id="intro-circle">
+          <div id="intro-ring"></div>
+          <div id="intro-finger"></div>
+        </div>
+        <div id="intro-label">TAP OR PRESS</div>
       </div>
 
       <!-- ═══ THEME BANNER (centered, no container needed) ═══ -->

@@ -6,7 +6,8 @@ import {
   C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY, HI_LEVEL_KEY,
   THEMES, FLICKER_START_SCORE, FLICKER_INTERVAL_MIN,
   FLICKER_INTERVAL_MAX, FLICKER_DURATION,
-  GHOST_RADIUS
+  GHOST_RADIUS, INTRO_DURATION, INTRO_SPEED_MULT,
+  BULLET_RADIUS, BULLET_DURATION, BULLET_SPEED_MULT, BULLET_TRANSITION
 } from '../config/constants';
 import { sfx } from '../engine/SoundEngine';
 import { InputManager } from '../engine/InputManager';
@@ -49,8 +50,19 @@ export class GameScene extends Phaser.Scene {
   private leftTrail!: number[];
   private rightTrail!: number[];
 
-  /* ghost power-up */
-  private ghostActive!: boolean;
+  /* intro phase */
+  private introTimer!: number;
+  private introActive!: boolean;
+
+  /* ghost power-up — stacking charges */
+  private ghostCharges!: number;
+
+  /* bullet time */
+  private bulletTimeRemaining!: number;
+  /** Current speed multiplier (smoothly transitions between targets) */
+  private speedMult!: number;
+  /** Target speed multiplier */
+  private speedMultTarget!: number;
 
   /* death */
   private deathParticles!: DeathParticle[];
@@ -100,8 +112,17 @@ export class GameScene extends Phaser.Scene {
     this.leftTrail  = [];
     this.rightTrail = [];
 
+    /* intro phase */
+    this.introTimer  = 0;
+    this.introActive = true;
+
     /* ghost power-up */
-    this.ghostActive = false;
+    this.ghostCharges = 0;
+
+    /* bullet time */
+    this.bulletTimeRemaining = 0;
+    this.speedMult       = INTRO_SPEED_MULT;  // start slow
+    this.speedMultTarget = INTRO_SPEED_MULT;
 
     /* death */
     this.deathParticles = [];
@@ -142,7 +163,49 @@ export class GameScene extends Phaser.Scene {
     }
 
     const dt  = delta / 16.667;
-    const dir = this.input_.direction();
+
+    /* -- intro timer -- */
+    if (this.introActive) {
+      this.introTimer += delta;
+      if (this.introTimer >= INTRO_DURATION) {
+        this.introActive = false;
+        this.speedMultTarget = 1;
+        uiManager.fadeOutIntroHint();
+      }
+    }
+
+    /* -- smooth speed multiplier transition -- */
+    if (this.speedMult !== this.speedMultTarget) {
+      const rate = delta / BULLET_TRANSITION; // fraction of transition per frame
+      if (this.speedMult < this.speedMultTarget) {
+        this.speedMult = Math.min(this.speedMultTarget, this.speedMult + rate);
+      } else {
+        this.speedMult = Math.max(this.speedMultTarget, this.speedMult - rate);
+      }
+    }
+
+    /* -- bullet time countdown -- */
+    if (this.bulletTimeRemaining > 0) {
+      this.bulletTimeRemaining -= delta;
+      if (this.bulletTimeRemaining <= 0) {
+        this.bulletTimeRemaining = 0;
+        this.speedMultTarget = 1; // ramp back to full speed
+      }
+      uiManager.updateBulletTime(this.bulletTimeRemaining);
+    }
+
+    /* -- check if any dot is inside a gate band (spread pause) -- */
+    let inGate = false;
+    for (const o of this.pool.items) {
+      if (o.y > DOT_Y - WALL_H / 2 - DOT_R && o.y < DOT_Y + WALL_H / 2 + DOT_R) {
+        inGate = true;
+        break;
+      }
+    }
+
+    /* -- direction: gather on input, spread when idle (paused in gates) -- */
+    const rawDir = this.input_.direction();
+    const dir = rawDir === -1 && inGate ? 0 : rawDir;
 
     /* -- physics -- */
     this.leftDot.vx  += dir * ACCEL * dt;
@@ -162,8 +225,9 @@ export class GameScene extends Phaser.Scene {
     if (this.leftTrail.length  > TRAIL_LEN) this.leftTrail.shift();
     if (this.rightTrail.length > TRAIL_LEN) this.rightTrail.shift();
 
-    /* -- scroll -- */
-    this.speed = SPEED_INITIAL + Math.sqrt(this.dist) * SPEED_GROWTH;
+    /* -- scroll (with smooth speed multiplier) -- */
+    const baseSpeed = SPEED_INITIAL + Math.sqrt(this.dist) * SPEED_GROWTH;
+    this.speed = baseSpeed * this.speedMult;
     const scroll = this.speed * dt;
     this.dist += scroll;
     this.pool.scroll(scroll, this.dist);
@@ -177,9 +241,10 @@ export class GameScene extends Phaser.Scene {
         const rightHit = this.hitTest(this.rightDot.x, o.rightGapX, o.gapW);
 
         if (leftHit || rightHit) {
-          if (this.ghostActive) {
-            this.ghostActive = false;
-            o.ghostPassed    = true;
+          if (this.ghostCharges > 0) {
+            this.ghostCharges--;
+            o.ghostPassed = true;
+            uiManager.updateGhostCharges(this.ghostCharges);
           } else {
             this.die(leftHit ? 'left' : 'right');
             return;
@@ -187,7 +252,7 @@ export class GameScene extends Phaser.Scene {
         }
 
         /* near-miss */
-        if (!this.ghostActive && !o.nearFlag) {
+        if (this.ghostCharges === 0 && !o.nearFlag) {
           const lD   = Math.abs(this.leftDot.x  - o.leftGapX);
           const rD   = Math.abs(this.rightDot.x - o.rightGapX);
           const edge = o.gapW / 2 - DOT_R;
@@ -208,9 +273,26 @@ export class GameScene extends Phaser.Scene {
         const rdy = DOT_Y - o.ghostY;
         if (ldx * ldx + ldy * ldy < gr2 || rdx * rdx + rdy * rdy < gr2) {
           o.ghostCollected = true;
-          this.ghostActive = true;
+          this.ghostCharges++;
           sfx.play('combo');
+          uiManager.updateGhostCharges(this.ghostCharges);
           uiManager.showGhostAlert();
+        }
+      }
+
+      /* -- bullet time pickup -- */
+      if (o.bulletX != null && o.bulletY != null && !o.bulletCollected) {
+        const br2 = (BULLET_RADIUS + DOT_R) * (BULLET_RADIUS + DOT_R);
+        const ldx = this.leftDot.x  - o.bulletX;
+        const ldy = DOT_Y - o.bulletY;
+        const rdx = this.rightDot.x - o.bulletX;
+        const rdy = DOT_Y - o.bulletY;
+        if (ldx * ldx + ldy * ldy < br2 || rdx * rdx + rdy * rdy < br2) {
+          o.bulletCollected = true;
+          this.bulletTimeRemaining = BULLET_DURATION;
+          this.speedMultTarget = BULLET_SPEED_MULT;
+          sfx.play('combo');
+          uiManager.updateBulletTime(this.bulletTimeRemaining);
         }
       }
 
@@ -265,15 +347,9 @@ export class GameScene extends Phaser.Scene {
     this.gfx.drawBg(this.dist, time, sx, sy, this.cameras.main);
     this.gfx.drawObstacles(this.pool.items, sx, sy, time);
     this.gfx.drawGhosts(this.pool.items, sx, sy, time);
+    this.gfx.drawBulletPickups(this.pool.items, sx, sy, time);
     this.gfx.drawTrails(this.leftTrail, this.rightTrail, DOT_Y, sx, sy);
-    this.gfx.drawDots(this.leftDot.x, this.rightDot.x, DOT_Y, time, sx, sy, this.ghostActive);
-
-    /* direction hint arrows — fade out as score increases */
-    const hintAlpha = Math.max(0, 1 - this.score / 50);
-    uiManager.setHintAlpha(hintAlpha);
-    if (hintAlpha > 0) {
-      this.gfx.drawDirectionHints(time, hintAlpha);
-    }
+    this.gfx.drawDots(this.leftDot.x, this.rightDot.x, DOT_Y, time, sx, sy, this.ghostCharges > 0);
 
     if (this.flickerPhase > 0) {
       this.gfx.drawFlicker(this.flickerPhase);
