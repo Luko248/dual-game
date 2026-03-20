@@ -17,8 +17,7 @@ class UIManager {
   private hudScore!: HTMLElement;
   private hudCombo!: HTMLElement;
   private hudBestBanner!: HTMLElement;
-  private hudHintSpread!: HTMLElement;
-  private hudHintGather!: HTMLElement;
+  private hudHint!: HTMLElement;
 
   /* theme banner */
   private gameBanner!: HTMLElement;
@@ -48,8 +47,7 @@ class UIManager {
     this.hudScore      = document.getElementById('hud-score')!;
     this.hudCombo      = document.getElementById('hud-combo')!;
     this.hudBestBanner = document.getElementById('hud-best-banner')!;
-    this.hudHintSpread = document.getElementById('hud-hint-spread')!;
-    this.hudHintGather = document.getElementById('hud-hint-gather')!;
+    this.hudHint       = document.getElementById('hud-hint')!;
     this.gameBanner    = document.getElementById('game-banner')!;
     this.bannerTheme   = document.getElementById('banner-theme')!;
     this.bannerLevel   = document.getElementById('banner-level')!;
@@ -102,8 +100,7 @@ class UIManager {
     this.hudScore.textContent        = '0';
     this.hudCombo.style.opacity      = '0';
     this.hudBestBanner.style.opacity = '0';
-    this.hudHintSpread.style.opacity = '0.35';
-    this.hudHintGather.style.opacity = '0.35';
+    this.hudHint.style.opacity       = '0.35';
     this.gameHUD.classList.remove('ui-hidden');
   }
 
@@ -125,9 +122,7 @@ class UIManager {
   }
 
   setHintAlpha(alpha: number): void {
-    const v = (alpha * 0.35).toString();
-    this.hudHintSpread.style.opacity = v;
-    this.hudHintGather.style.opacity = v;
+    this.hudHint.style.opacity = (alpha * 0.35).toString();
   }
 
   /* ------------------------------------------------------------------ */

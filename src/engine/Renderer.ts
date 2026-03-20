@@ -234,25 +234,14 @@ export class Renderer {
     const y = H - 38;
     const a = alpha * (0.25 + 0.08 * Math.sin(time * 0.003));
 
-    /* LEFT side — spread arrows: ← → pointing outward */
-    const lx = W * 0.25;
-    /* left-pointing arrow */
+    /* Gather arrows: → ← pointing inward at center */
+    const cx = W * 0.5;
+    /* right-pointing arrow (from left) */
     g.fillStyle(C_LEFT, a);
-    g.fillTriangle(lx - 18, y, lx - 6, y - 6, lx - 6, y + 6);
-    /* right-pointing arrow */
+    g.fillTriangle(cx - 6, y, cx - 18, y - 6, cx - 18, y + 6);
+    /* left-pointing arrow (from right) */
     g.fillStyle(C_RIGHT, a);
-    g.fillTriangle(lx + 18, y, lx + 6, y - 6, lx + 6, y + 6);
-    /* label */
-    // drawn as small dots between arrows to suggest "spread"
-
-    /* RIGHT side — gather arrows: → ← pointing inward */
-    const rx = W * 0.75;
-    /* right-pointing arrow (coming from left) */
-    g.fillStyle(C_LEFT, a);
-    g.fillTriangle(rx - 6, y, rx - 18, y - 6, rx - 18, y + 6);
-    /* left-pointing arrow (coming from right) */
-    g.fillStyle(C_RIGHT, a);
-    g.fillTriangle(rx + 6, y, rx + 18, y - 6, rx + 18, y + 6);
+    g.fillTriangle(cx + 6, y, cx + 18, y - 6, cx + 18, y + 6);
   }
 
   /* ---- ghost power-ups ---- */

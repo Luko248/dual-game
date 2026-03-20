@@ -89,7 +89,7 @@ canvas {
 #menu-controls, #menu-ghost-row,
 #menu-best, #menu-lvl, #menu-prompt,
 #hud-best-banner, #hud-score, #hud-combo,
-#hud-hint-spread, #hud-hint-gather,
+#hud-hint,
 #ghost-alert,
 #go-title, #go-score, #go-best,
 #go-combo, #go-level, #go-retry {
@@ -317,19 +317,10 @@ canvas {
   opacity: 0;
 }
 
-/* W*0.25 = 100, W*0.75 = 300 */
-#hud-hint-spread {
+/* centered hint */
+#hud-hint {
   top: 618px;
-  left: 100px;
-  transform: translateX(-50%);
-  font-size: 11px;
-  color: #555577;
-  letter-spacing: 0.12em;
-}
-
-#hud-hint-gather {
-  top: 618px;
-  left: 300px;
+  left: 200px;
   transform: translateX(-50%);
   font-size: 11px;
   color: #555577;
