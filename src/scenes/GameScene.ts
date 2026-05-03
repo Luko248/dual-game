@@ -7,7 +7,7 @@ import {
   THEMES, FLICKER_START_SCORE, FLICKER_INTERVAL_MIN,
   FLICKER_INTERVAL_MAX, FLICKER_DURATION,
   GHOST_RADIUS, INTRO_DURATION, INTRO_SPEED_MULT,
-  BULLET_RADIUS, BULLET_DURATION, BULLET_SPEED_MULT, BULLET_TRANSITION
+  BULLET_RADIUS, BULLET_WALL_COUNT, BULLET_SPEED_MULT, BULLET_TRANSITION
 } from '../config/constants';
 import { sfx } from '../engine/SoundEngine';
 import { InputManager } from '../engine/InputManager';
@@ -57,8 +57,8 @@ export class GameScene extends Phaser.Scene {
   /* ghost power-up — stacking charges */
   private ghostCharges!: number;
 
-  /* bullet time */
-  private bulletTimeRemaining!: number;
+  /* bullet time — counts walls remaining to pass at slow speed */
+  private bulletWallsLeft!: number;
   /** Current speed multiplier (smoothly transitions between targets) */
   private speedMult!: number;
   /** Target speed multiplier */
@@ -120,7 +120,7 @@ export class GameScene extends Phaser.Scene {
     this.ghostCharges = 0;
 
     /* bullet time */
-    this.bulletTimeRemaining = 0;
+    this.bulletWallsLeft = 0;
     this.speedMult       = INTRO_SPEED_MULT;  // start slow
     this.speedMultTarget = INTRO_SPEED_MULT;
 
@@ -171,6 +171,7 @@ export class GameScene extends Phaser.Scene {
         this.introActive = false;
         this.speedMultTarget = 1;
         uiManager.fadeOutIntroHint();
+        uiManager.stopIntroDemo();
       }
     }
 
@@ -182,16 +183,6 @@ export class GameScene extends Phaser.Scene {
       } else {
         this.speedMult = Math.max(this.speedMultTarget, this.speedMult - rate);
       }
-    }
-
-    /* -- bullet time countdown -- */
-    if (this.bulletTimeRemaining > 0) {
-      this.bulletTimeRemaining -= delta;
-      if (this.bulletTimeRemaining <= 0) {
-        this.bulletTimeRemaining = 0;
-        this.speedMultTarget = 1; // ramp back to full speed
-      }
-      uiManager.updateBulletTime(this.bulletTimeRemaining);
     }
 
     /* -- physics -- */
@@ -278,10 +269,10 @@ export class GameScene extends Phaser.Scene {
         const rdy = DOT_Y - o.bulletY;
         if (ldx * ldx + ldy * ldy < br2 || rdx * rdx + rdy * rdy < br2) {
           o.bulletCollected = true;
-          this.bulletTimeRemaining = BULLET_DURATION;
+          this.bulletWallsLeft = BULLET_WALL_COUNT;
           this.speedMultTarget = BULLET_SPEED_MULT;
           sfx.play('combo');
-          uiManager.updateBulletTime(this.bulletTimeRemaining);
+          uiManager.updateBulletWalls(this.bulletWallsLeft);
         }
       }
 
@@ -295,6 +286,13 @@ export class GameScene extends Phaser.Scene {
         if (this.score > this.hiScore && !this.newBest) {
           this.newBest = true;
           uiManager.showNewBest();
+        }
+
+        /* bullet time consumes a wall pass; revert speed when exhausted */
+        if (this.bulletWallsLeft > 0) {
+          this.bulletWallsLeft--;
+          uiManager.updateBulletWalls(this.bulletWallsLeft);
+          if (this.bulletWallsLeft === 0) this.speedMultTarget = 1;
         }
       }
     }

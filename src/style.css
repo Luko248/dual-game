@@ -165,7 +165,7 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 19px;
-  color: #555577;
+  color: #aaaacc;
   letter-spacing: 0.08em;
 }
 
@@ -175,7 +175,7 @@ canvas {
   transform: translateX(-50%);
   font-size: 14px;
   font-weight: bold;
-  color: #555577;
+  color: #b8b8d8;
   letter-spacing: 0.14em;
 }
 
@@ -184,7 +184,7 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 16px;
-  color: #444466;
+  color: #9999bb;
   letter-spacing: 0.04em;
 }
 
@@ -193,7 +193,7 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 16px;
-  color: #444466;
+  color: #9999bb;
   letter-spacing: 0.04em;
 }
 
@@ -202,7 +202,7 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 16px;
-  color: #444466;
+  color: #9999bb;
   letter-spacing: 0.04em;
 }
 
@@ -211,7 +211,7 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 14px;
-  color: #444466;
+  color: #9999bb;
   letter-spacing: 0.04em;
 }
 
@@ -248,7 +248,7 @@ canvas {
 
 #menu-ghost-text {
   font-size: 14px;
-  color: #444466;
+  color: #9999bb;
   letter-spacing: 0.04em;
 }
 
@@ -257,7 +257,7 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 23px;
-  color: #555577;
+  color: #b8b8d8;
   letter-spacing: 0.08em;
 }
 
@@ -266,7 +266,7 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 16px;
-  color: #444466;
+  color: #9999bb;
   letter-spacing: 0.1em;
 }
 
@@ -275,7 +275,7 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   font-size: 18px;
-  color: #777777;
+  color: #cccccc;
   letter-spacing: 0.1em;
   animation: ui-prompt-breathe 2.8s ease-in-out infinite;
 }
@@ -487,6 +487,17 @@ canvas {
 #joystick-right .joystick-knob {
   background: rgba(255, 0, 153, 0.22);
   box-shadow: 0 0 10px rgba(255, 0, 153, 0.15);
+}
+
+/* Intro demo: animate knobs to show players the slide gesture. */
+@keyframes joystick-demo-knob {
+  0%, 100% { transform: translate(-50%, -50%); }
+  25%      { transform: translate(calc(-50% - 24px), -50%); }
+  75%      { transform: translate(calc(-50% + 24px), -50%); }
+}
+
+.intro-demo .joystick-knob {
+  animation: joystick-demo-knob 1.6s ease-in-out infinite;
 }
 
 

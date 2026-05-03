@@ -116,7 +116,12 @@ class UIManager {
     this.hudGhost.classList.add('ui-hidden');
     this.hudBullet.classList.add('ui-hidden');
     this.gameHUD.classList.remove('ui-hidden');
+    this.gameHUD.classList.add('intro-demo');
     this.introHint.classList.remove('ui-hidden', 'intro-fading');
+  }
+
+  stopIntroDemo(): void {
+    this.gameHUD.classList.remove('intro-demo');
   }
 
   updateScore(score: number): void {
@@ -164,9 +169,9 @@ class UIManager {
   /*  BULLET TIME                                                         */
   /* ------------------------------------------------------------------ */
 
-  updateBulletTime(remaining: number): void {
-    if (remaining > 0) {
-      this.hudBulletTimer.textContent = (remaining / 1000).toFixed(1);
+  updateBulletWalls(wallsLeft: number): void {
+    if (wallsLeft > 0) {
+      this.hudBulletTimer.textContent = wallsLeft.toString();
       this.hudBullet.classList.remove('ui-hidden');
     } else {
       this.hudBullet.classList.add('ui-hidden');

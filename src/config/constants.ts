@@ -77,8 +77,8 @@ export const C_GHOST = 0xffffff;
 /* Bullet time power-up */
 export const BULLET_MIN_LEVEL = 1;       // theme index (0-based) — starts at level 2
 export const BULLET_SPAWN_CHANCE = 0.06;
-export const BULLET_DURATION = 3000;     // ms
-export const BULLET_SPEED_MULT = 0.3;    // speed multiplier during bullet time
+export const BULLET_WALL_COUNT = 2;      // walls passed at half speed before reverting
+export const BULLET_SPEED_MULT = 0.5;    // speed multiplier during bullet time (half)
 export const BULLET_TRANSITION = 400;    // ms for speed ramp in/out
 export const BULLET_RADIUS = 10;
 export const C_BULLET = 0x44ff66;        // green

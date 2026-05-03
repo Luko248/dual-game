@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { sfx } from './SoundEngine';
+import { uiManager } from './UIManager';
 import { HALF } from '../config/constants';
 
 const JOYSTICK_MAX = 40;
@@ -21,6 +22,10 @@ export class InputManager {
     this.leftKnob  = document.getElementById('joystick-left-knob');
     this.rightKnob = document.getElementById('joystick-right-knob');
 
+    /* Phaser allocates only 1 touch pointer by default — add a 2nd so
+       both thumbs can drive the joysticks simultaneously. */
+    scene.input.addPointer(1);
+
     const kb       = scene.input.keyboard!;
     this.keyLeft   = kb.addKey('LEFT');
     this.keyRight  = kb.addKey('RIGHT');
@@ -30,6 +35,7 @@ export class InputManager {
 
     scene.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       sfx.init();
+      uiManager.stopIntroDemo();
       if (p.x < HALF) {
         this.leftTouch = p;
       } else {
