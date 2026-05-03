@@ -95,6 +95,16 @@ export class InputManager {
     return Math.max(-1, Math.min(1, (this.rightTouch.x - this.rightTouch.downX) / JOYSTICK_MAX));
   }
 
+  /** Combined spread / gather command (−1 = full gather, +1 = full spread).
+   *  Uses whichever thumb has the larger spread contribution so a single
+   *  thumb — or one that starts a few ms before the other — drives the
+   *  full mirrored action without desyncing the dots. */
+  spreadDir(): number {
+    const l = -this.leftDir();   // left thumb pushed LEFT  → spreading → +
+    const r =  this.rightDir();  // right thumb pushed RIGHT → spreading → +
+    return Math.abs(l) >= Math.abs(r) ? l : r;
+  }
+
   anyPressed(): boolean {
     return this.leftTouch  !== null ||
            this.rightTouch !== null ||

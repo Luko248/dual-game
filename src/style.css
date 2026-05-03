@@ -500,6 +500,11 @@ canvas {
   animation: joystick-demo-knob 1.6s ease-in-out infinite;
 }
 
+/* Right knob mirrors the left so the demo shows spread / gather. */
+.intro-demo #joystick-right .joystick-knob {
+  animation-direction: reverse;
+}
+
 
 /* ═══════════════════════════════════════════
    THEME TRANSITION BANNER

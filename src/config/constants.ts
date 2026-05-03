@@ -75,7 +75,7 @@ export const GHOST_RADIUS = 12;
 export const C_GHOST = 0xffffff;
 
 /* Bullet time power-up */
-export const BULLET_MIN_LEVEL = 1;       // theme index (0-based) — starts at level 2
+export const BULLET_MIN_LEVEL = 3;       // theme index (0-based) — starts at level 4
 export const BULLET_SPAWN_CHANCE = 0.06;
 export const BULLET_WALL_COUNT = 2;      // walls passed at half speed before reverting
 export const BULLET_SPEED_MULT = 0.5;    // speed multiplier during bullet time (half)

@@ -185,11 +185,11 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    /* -- physics -- */
-    const leftDir  = this.input_.leftDir();
-    const rightDir = this.input_.rightDir();
-    this.leftDot.vx  += leftDir  * ACCEL * dt;
-    this.rightDot.vx += rightDir * ACCEL * dt;
+    /* -- physics: mirrored spread/gather, driven by the stronger thumb so
+       a small timing skew between the two thumbs cannot desync the dots -- */
+    const spread = this.input_.spreadDir();
+    this.leftDot.vx  += -spread * ACCEL * dt;
+    this.rightDot.vx +=  spread * ACCEL * dt;
     this.leftDot.vx  *= Math.pow(FRICTION, dt);
     this.rightDot.vx *= Math.pow(FRICTION, dt);
     this.leftDot.vx  = Phaser.Math.Clamp(this.leftDot.vx, -MAX_VEL, MAX_VEL);
