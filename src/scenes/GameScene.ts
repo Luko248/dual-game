@@ -194,22 +194,11 @@ export class GameScene extends Phaser.Scene {
       uiManager.updateBulletTime(this.bulletTimeRemaining);
     }
 
-    /* -- check if any dot is inside a gate band (spread pause) -- */
-    let inGate = false;
-    for (const o of this.pool.items) {
-      if (o.y > DOT_Y - WALL_H / 2 - DOT_R && o.y < DOT_Y + WALL_H / 2 + DOT_R) {
-        inGate = true;
-        break;
-      }
-    }
-
-    /* -- direction: gather on input, spread when idle (paused in gates) -- */
-    const rawDir = this.input_.direction();
-    const dir = rawDir === -1 && inGate ? 0 : rawDir;
-
     /* -- physics -- */
-    this.leftDot.vx  += dir * ACCEL * dt;
-    this.rightDot.vx += -dir * ACCEL * dt;
+    const leftDir  = this.input_.leftDir();
+    const rightDir = this.input_.rightDir();
+    this.leftDot.vx  += leftDir  * ACCEL * dt;
+    this.rightDot.vx += rightDir * ACCEL * dt;
     this.leftDot.vx  *= Math.pow(FRICTION, dt);
     this.rightDot.vx *= Math.pow(FRICTION, dt);
     this.leftDot.vx  = Phaser.Math.Clamp(this.leftDot.vx, -MAX_VEL, MAX_VEL);

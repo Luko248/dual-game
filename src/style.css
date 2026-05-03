@@ -90,6 +90,7 @@ canvas {
 #menu-best, #menu-lvl, #menu-prompt,
 #hud-best-banner, #hud-score, #hud-combo,
 #hud-ghost, #hud-bullet,
+#joystick-left, #joystick-right,
 #ghost-alert,
 #go-title, #go-score, #go-best,
 #go-combo, #go-level, #go-retry {
@@ -401,23 +402,12 @@ canvas {
 
 
 /* ═══════════════════════════════════════════
-   INTRO HINT — large breathing circle
-   Centered at DOT_Y area (510px)
+   INTRO HINT — slide-thumbs label above joysticks
 ═══════════════════════════════════════════ */
 
-@keyframes intro-breathe-finger {
-  0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.92); }
-  50%      { opacity: 0.9; transform: translate(-50%, -50%) scale(1.08); }
-}
-
 @keyframes intro-breathe-label {
-  0%, 100% { opacity: 0.3; transform: scale(0.95); }
-  50%      { opacity: 0.9; transform: scale(1.05); }
-}
-
-@keyframes intro-ring-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.3), inset 0 0 12px rgba(255,255,255,0.05); }
-  50%      { box-shadow: 0 0 18px 4px rgba(255,255,255,0.15), inset 0 0 20px rgba(255,255,255,0.1); }
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.8;  }
 }
 
 @keyframes intro-fade-out {
@@ -431,50 +421,72 @@ canvas {
   left: 0;
   width: 400px;
   height: 640px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  padding-top: 60px;
+  pointer-events: none;
 }
 
 #intro-hint.intro-fading {
   animation: intro-fade-out 0.6s ease-out forwards;
 }
 
-#intro-circle {
-  position: relative;
-  width: 80px;
-  height: 80px;
+#intro-label {
+  position: absolute;
+  bottom: 142px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  animation: intro-breathe-label 1.5s ease-in-out infinite;
 }
 
-#intro-ring {
-  position: absolute;
-  inset: 0;
+
+/* ═══════════════════════════════════════════
+   JOYSTICK INDICATORS
+   Positioned in the bottom 130px below DOT_Y=510.
+   Left center: (90, 590)  Right center: (310, 590)
+   Outer ring radius: 44px → width/height: 88px
+═══════════════════════════════════════════ */
+
+.joystick {
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.35);
-  animation: intro-ring-pulse 1.5s ease-in-out infinite;
 }
 
-#intro-finger {
+#joystick-left {
+  left: 46px;
+  top: 546px;
+  border: 1.5px solid rgba(0, 232, 255, 0.18);
+  background: rgba(0, 232, 255, 0.03);
+}
+
+#joystick-right {
+  left: 266px;
+  top: 546px;
+  border: 1.5px solid rgba(255, 0, 153, 0.18);
+  background: rgba(255, 0, 153, 0.03);
+}
+
+.joystick-knob {
   position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   top: 50%;
   left: 50%;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.5);
   transform: translate(-50%, -50%);
-  animation: intro-breathe-finger 1.5s ease-in-out infinite;
+  transition: none;
 }
 
-#intro-label {
-  font-size: 16px;
-  color: rgba(255,255,255,0.5);
-  letter-spacing: 0.18em;
-  text-align: center;
-  animation: intro-breathe-label 1.5s ease-in-out infinite;
+#joystick-left .joystick-knob {
+  background: rgba(0, 232, 255, 0.22);
+  box-shadow: 0 0 10px rgba(0, 232, 255, 0.15);
+}
+
+#joystick-right .joystick-knob {
+  background: rgba(255, 0, 153, 0.22);
+  box-shadow: 0 0 10px rgba(255, 0, 153, 0.15);
 }
 
 

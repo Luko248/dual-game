@@ -1,40 +1,98 @@
 import Phaser from 'phaser';
 import { sfx } from './SoundEngine';
+import { HALF } from '../config/constants';
 
-/**
- * Simplified one-gesture input.
- * Dots auto-spread by default; any input (spacebar / tap / hold) = gather.
- * Returns: -1 (spread, no input) or +1 (gather, input active).
- */
+const JOYSTICK_MAX = 40;
+
 export class InputManager {
   private scene: Phaser.Scene;
-  private pointerDown = false;
-  private keySpace: Phaser.Input.Keyboard.Key;
+  private leftTouch:  Phaser.Input.Pointer | null = null;
+  private rightTouch: Phaser.Input.Pointer | null = null;
+  private leftKnob:   HTMLElement | null = null;
+  private rightKnob:  HTMLElement | null = null;
+  private keyLeft!:   Phaser.Input.Keyboard.Key;
+  private keyRight!:  Phaser.Input.Keyboard.Key;
+  private keyA!:      Phaser.Input.Keyboard.Key;
+  private keyD!:      Phaser.Input.Keyboard.Key;
+  private keySpace!:  Phaser.Input.Keyboard.Key;
 
   constructor(scene: Phaser.Scene) {
-    this.scene = scene;
+    this.scene     = scene;
+    this.leftKnob  = document.getElementById('joystick-left-knob');
+    this.rightKnob = document.getElementById('joystick-right-knob');
 
-    /* keyboard — only spacebar needed */
-    this.keySpace = scene.input.keyboard!.addKey('SPACE');
+    const kb       = scene.input.keyboard!;
+    this.keyLeft   = kb.addKey('LEFT');
+    this.keyRight  = kb.addKey('RIGHT');
+    this.keyA      = kb.addKey('A');
+    this.keyD      = kb.addKey('D');
+    this.keySpace  = kb.addKey('SPACE');
 
-    /* touch / click */
-    scene.input.on('pointerdown', () => {
+    scene.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       sfx.init();
-      this.pointerDown = true;
+      if (p.x < HALF) {
+        this.leftTouch = p;
+      } else {
+        this.rightTouch = p;
+      }
     });
-    scene.input.on('pointerup', () => {
-      this.pointerDown = false;
+
+    scene.input.on('pointermove', (p: Phaser.Input.Pointer) => {
+      if (p === this.leftTouch) {
+        this._setKnob(this.leftKnob, p.x - p.downX);
+      } else if (p === this.rightTouch) {
+        this._setKnob(this.rightKnob, p.x - p.downX);
+      }
+    });
+
+    scene.input.on('pointerup', (p: Phaser.Input.Pointer) => {
+      if (p === this.leftTouch) {
+        this.leftTouch = null;
+        this._resetKnob(this.leftKnob);
+      } else if (p === this.rightTouch) {
+        this.rightTouch = null;
+        this._resetKnob(this.rightKnob);
+      }
+    });
+
+    scene.input.on('gameout', () => {
+      this.leftTouch = this.rightTouch = null;
+      this._resetKnob(this.leftKnob);
+      this._resetKnob(this.rightKnob);
     });
   }
 
-  /** -1 = spread (default), +1 = gather (input active) */
-  direction(): number {
-    if (this.keySpace.isDown || this.pointerDown) return 1;
-    return -1;
+  private _setKnob(knob: HTMLElement | null, dx: number): void {
+    if (!knob) return;
+    const c = Math.max(-JOYSTICK_MAX, Math.min(JOYSTICK_MAX, dx));
+    knob.style.transform = `translate(calc(-50% + ${c}px), -50%)`;
   }
 
-  /** Any button pressed — for restart prompts */
+  private _resetKnob(knob: HTMLElement | null): void {
+    if (knob) knob.style.transform = 'translate(-50%, -50%)';
+  }
+
+  /** -1..+1 for left dot. Left = negative, right = positive. */
+  leftDir(): number {
+    if (this.keyLeft.isDown  || this.keyA.isDown)     return -1;
+    if (this.keyRight.isDown || this.keyD.isDown || this.keySpace.isDown) return 1;
+    if (!this.leftTouch) return 0;
+    return Math.max(-1, Math.min(1, (this.leftTouch.x - this.leftTouch.downX) / JOYSTICK_MAX));
+  }
+
+  /** -1..+1 for right dot. Left = negative, right = positive.
+   *  Keyboard uses spread/gather: left key mirrors left dot. */
+  rightDir(): number {
+    if (this.keyLeft.isDown  || this.keyA.isDown)     return  1;
+    if (this.keyRight.isDown || this.keyD.isDown || this.keySpace.isDown) return -1;
+    if (!this.rightTouch) return 0;
+    return Math.max(-1, Math.min(1, (this.rightTouch.x - this.rightTouch.downX) / JOYSTICK_MAX));
+  }
+
   anyPressed(): boolean {
-    return this.scene.input.activePointer.isDown || this.keySpace.isDown;
+    return this.leftTouch  !== null ||
+           this.rightTouch !== null ||
+           this.keyLeft.isDown || this.keyRight.isDown ||
+           this.keyA.isDown    || this.keyD.isDown     || this.keySpace.isDown;
   }
 }

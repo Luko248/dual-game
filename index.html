@@ -31,10 +31,10 @@
         <div id="menu-title">DUAL</div>
         <div id="menu-tagline">Two dots. One mind.</div>
         <div id="menu-howto-header">HOW TO PLAY</div>
-        <div id="menu-spread">auto&nbsp;&nbsp;spread apart</div>
-        <div id="menu-gather">tap&nbsp;&nbsp;come together</div>
+        <div id="menu-spread">thumbs apart&nbsp;&nbsp;spread</div>
+        <div id="menu-gather">thumbs together&nbsp;&nbsp;gather</div>
         <div id="menu-survive">Both must survive.</div>
-        <div id="menu-controls">SPACE&nbsp;&nbsp;or&nbsp;&nbsp;tap &amp; hold</div>
+        <div id="menu-controls">slide left or right</div>
         <div id="menu-ghost-row">
           <div id="menu-ghost-icon"></div>
           <div id="menu-ghost-text">= phase through next wall</div>
@@ -59,15 +59,18 @@
           <div id="hud-bullet-timer">3.0</div>
           <div id="hud-bullet-icon"></div>
         </div>
+        <!-- Joystick indicators -->
+        <div id="joystick-left" class="joystick">
+          <div class="joystick-knob" id="joystick-left-knob"></div>
+        </div>
+        <div id="joystick-right" class="joystick">
+          <div class="joystick-knob" id="joystick-right-knob"></div>
+        </div>
       </div>
 
-      <!-- ═══ INTRO HINT (large circle + text, shown first 3s) ═══ -->
+      <!-- ═══ INTRO HINT (shown first 3s) ═══ -->
       <div id="intro-hint" class="ui-hidden">
-        <div id="intro-circle">
-          <div id="intro-ring"></div>
-          <div id="intro-finger"></div>
-        </div>
-        <div id="intro-label">TAP OR PRESS</div>
+        <div id="intro-label">SLIDE THUMBS &#8592; &#8594;</div>
       </div>
 
       <!-- ═══ THEME BANNER (centered, no container needed) ═══ -->
