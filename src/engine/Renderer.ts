@@ -24,6 +24,8 @@ export class Renderer {
   private theme: Theme = THEMES[0];
   flickering = false;
   private themeFlash = 0;
+  /** Last bg color pushed to the camera — skips a redundant string-parse per frame. */
+  private lastCameraBg = -1;
 
   constructor(layers: GraphicsLayers) {
     this.l = layers;
@@ -35,7 +37,12 @@ export class Renderer {
   }
 
   clearAll(): void {
-    for (const k in this.l) this.l[k as keyof GraphicsLayers].clear();
+    /* explicit calls — avoid for-in's string-key allocation per frame */
+    this.l.bg.clear();
+    this.l.walls.clear();
+    this.l.trails.clear();
+    this.l.dots.clear();
+    this.l.fx.clear();
   }
 
   /* ---- background ---- */
@@ -74,8 +81,12 @@ export class Renderer {
     bg.lineTo(HALF + sx, H + sy);
     bg.strokePath();
 
-    /* set camera bg color to theme */
-    if (camera) camera.setBackgroundColor(t.bg);
+    /* set camera bg color to theme — only when changed; setBackgroundColor
+       parses the color value internally, so skipping the no-op call matters. */
+    if (camera && t.bg !== this.lastCameraBg) {
+      camera.setBackgroundColor(t.bg);
+      this.lastCameraBg = t.bg;
+    }
   }
 
   /* ---- obstacles with portal gates ---- */

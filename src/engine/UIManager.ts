@@ -38,6 +38,10 @@ class UIManager {
   private bulletAlert!: HTMLElement;
   private bulletTimer?: ReturnType<typeof setTimeout>;
 
+  /* per-frame change-detection caches — skip DOM writes when unchanged */
+  private lastScore = -1;
+  private lastCombo = -1;
+
   /* game over */
   private gameoverUI!: HTMLElement;
   private goTitle!: HTMLElement;
@@ -122,6 +126,9 @@ class UIManager {
     this.gameHUD.classList.remove('ui-hidden');
     this.gameHUD.classList.add('intro-demo');
     this.introHint.classList.remove('ui-hidden', 'intro-fading');
+    /* reset change-detection caches so the first per-frame update writes */
+    this.lastScore = -1;
+    this.lastCombo = -1;
   }
 
   stopIntroDemo(): void {
@@ -129,10 +136,14 @@ class UIManager {
   }
 
   updateScore(score: number): void {
+    if (score === this.lastScore) return;
+    this.lastScore = score;
     this.hudScore.textContent = score.toString();
   }
 
   updateCombo(combo: number): void {
+    if (combo === this.lastCombo) return;
+    this.lastCombo = combo;
     if (combo > 1) {
       this.hudCombo.textContent   = '\u00d7' + Math.min(combo, MAX_COMBO_MULTI);
       this.hudCombo.style.opacity = '0.8';

@@ -89,18 +89,28 @@ export class ObstaclePool {
 
   /** Move everything down, spawn new rows, cull off-screen */
   scroll(amount: number, dist: number): void {
-    for (const o of this.items) {
+    /* Single pass: scroll, then in-place compact survivors so we don't
+       allocate a fresh array per frame. Items spawn near the top and
+       drift down monotonically, so a simple write-pointer is enough. */
+    const items = this.items;
+    const cullY = H + 40;
+    let w = 0;
+    for (let r = 0; r < items.length; r++) {
+      const o = items[r];
       o.y += amount;
-      if (o.ghostY != null) o.ghostY += amount;
+      if (o.ghostY != null)  o.ghostY  += amount;
       if (o.bulletY != null) o.bulletY += amount;
+      if (o.y < cullY) {
+        if (w !== r) items[w] = o;
+        w++;
+      }
     }
+    items.length = w;
 
     this.nextY += amount;
     while (this.nextY > -60) {
       this.nextY -= this.spacing(dist);
       this.spawn(this.nextY, dist);
     }
-
-    this.items = this.items.filter(o => o.y < H + 40);
   }
 }
