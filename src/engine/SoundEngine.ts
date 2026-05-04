@@ -51,8 +51,16 @@ export class SoundEngine {
       const Ctor: typeof AudioContext =
         window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       this.ctx = new Ctor();
-      /* On iOS the context is created in `suspended` state even inside a
-         user gesture — must resume() explicitly before audio will play. */
+      /* iOS audio unlock — without this, the context's currentTime stays
+         at 0 for a moment after creation, and any oscillator scheduled at
+         currentTime is silently dropped because by the time audio actually
+         starts running the events are "in the past". Playing a 1-sample
+         silent buffer forces Safari to advance the clock immediately. */
+      const silent = this.ctx.createBuffer(1, 1, 22050);
+      const src = this.ctx.createBufferSource();
+      src.buffer = silent;
+      src.connect(this.ctx.destination);
+      src.start(0);
       if (this.ctx.state === 'suspended') this.ctx.resume();
     } catch (_) { /* stay silent */ }
   }

@@ -1,28 +1,26 @@
-import { WebHaptics } from 'web-haptics';
-
 /**
- * Haptic feedback wrapper.
+ * Haptic feedback wrapper around navigator.vibrate.
  *
- * Uses the `web-haptics` package, which:
- *   - calls `navigator.vibrate` on Android / vibration-capable browsers
- *   - falls back to a hidden `<input type="checkbox" switch>` element on
- *     iOS Safari 17.4+ (clicking that element triggers the Taptic Engine,
- *     the only documented way to get real haptics from a web page on iOS)
+ * Works on Android Chrome / Firefox and most Chromium-based browsers.
  *
- * We share a single instance — instantiating creates DOM, so we don't want
- * to spin up new ones on every play.
+ * iOS Safari is silent — it does NOT implement the Vibration API, and the
+ * `<input type="checkbox" switch>` Taptic trick (used by libraries like
+ * web-haptics) only fires on a *real* user-touch toggle of the switch, not
+ * on programmatic `.click()` calls. There is no documented way to fire
+ * haptics from JS on iOS for in-game events. We accept that and no-op.
  */
 
-const engine = new WebHaptics({ debug: false, showSwitch: false });
+const supported =
+  typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
 
 export const haptics = {
   /** Light tap when both dots clear a gate. */
   pass(): void {
-    engine.trigger('selection');
+    if (supported) navigator.vibrate(8);
   },
 
   /** Heavier double-thump on a fatal hit. */
   hit(): void {
-    engine.trigger('error');
+    if (supported) navigator.vibrate([60, 30, 90]);
   }
 };
