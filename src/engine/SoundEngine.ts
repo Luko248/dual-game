@@ -41,14 +41,25 @@ export class SoundEngine {
   private ctx: AudioContext | null = null;
 
   init(): void {
-    if (this.ctx) return;
+    if (this.ctx) {
+      /* iOS Safari may have suspended the context (page hidden, etc.).
+         Always try to resume on a user-gesture-driven init call. */
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      return;
+    }
     try {
-      this.ctx = new AudioContext();
+      const Ctor: typeof AudioContext =
+        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      this.ctx = new Ctor();
+      /* On iOS the context is created in `suspended` state even inside a
+         user gesture — must resume() explicitly before audio will play. */
+      if (this.ctx.state === 'suspended') this.ctx.resume();
     } catch (_) { /* stay silent */ }
   }
 
   play(name: SoundName): void {
     if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();

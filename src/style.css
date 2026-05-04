@@ -91,7 +91,7 @@ canvas {
 #hud-best-banner, #hud-score, #hud-combo,
 #hud-ghost, #hud-bullet,
 #joystick-left, #joystick-right,
-#ghost-alert,
+#ghost-alert, #bullet-alert,
 #go-title, #go-score, #go-best,
 #go-combo, #go-level, #go-retry {
   position: absolute;
@@ -131,12 +131,16 @@ canvas {
   animation: ui-banner 2.2s ease-out forwards;
 }
 
-@keyframes ui-ghost {
-  0%   { opacity: 1; }
-  100% { opacity: 0; }
+/* Pickup alerts (ghost / bullet time): slide up from below + fade in,
+   hold, then fade out. Total duration must match UIManager timer. */
+@keyframes ui-pickup-alert {
+  0%   { opacity: 0; transform: translate(-50%, 28px); }
+  15%  { opacity: 1; transform: translate(-50%, 0); }
+  85%  { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, 0); }
 }
-.ui-ghost-anim {
-  animation: ui-ghost 0.7s ease-out forwards;
+.ui-pickup-alert-anim {
+  animation: ui-pickup-alert 2s ease-out forwards;
 }
 
 .ui-new-best { color: #ffcc00 !important; }
@@ -573,19 +577,32 @@ canvas {
 
 
 /* ═══════════════════════════════════════════
-   GHOST ALERT
-   DOT_Y = H-130 = 510 → alert at 510-50 = 460
+   POWER-UP PICKUP ALERTS
+   Sit in the top 30% of the 640-tall canvas
+   (top:150px ≈ 23%) so they don't fight with
+   the score HUD or the play area.
 ═══════════════════════════════════════════ */
 
-#ghost-alert {
-  top: 460px;
+#ghost-alert,
+#bullet-alert {
+  top: 150px;
   left: 50%;
-  transform: translateX(-50%);
-  font-size: 20px;
+  transform: translate(-50%, 0);
+  font-size: 22px;
   font-weight: bold;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+#ghost-alert {
   color: #ffffff;
-  letter-spacing: 0.2em;
   text-shadow: 0 0 16px rgba(255,255,255,0.8);
+}
+
+#bullet-alert {
+  color: #44ff66;
+  text-shadow: 0 0 16px rgba(68,255,102,0.85);
 }
 
 

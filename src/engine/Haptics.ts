@@ -1,22 +1,28 @@
+import { WebHaptics } from 'web-haptics';
+
 /**
- * Tiny haptics wrapper around navigator.vibrate.
- * Two distinct patterns so the player can feel the difference between
- * a clean gate pass and a fatal collision. Fails silently on unsupported
- * platforms (iOS Safari, desktop).
+ * Haptic feedback wrapper.
+ *
+ * Uses the `web-haptics` package, which:
+ *   - calls `navigator.vibrate` on Android / vibration-capable browsers
+ *   - falls back to a hidden `<input type="checkbox" switch>` element on
+ *     iOS Safari 17.4+ (clicking that element triggers the Taptic Engine,
+ *     the only documented way to get real haptics from a web page on iOS)
+ *
+ * We share a single instance — instantiating creates DOM, so we don't want
+ * to spin up new ones on every play.
  */
 
-const canVibrate = (): boolean =>
-  typeof navigator !== 'undefined' &&
-  typeof navigator.vibrate === 'function';
+const engine = new WebHaptics({ debug: false, showSwitch: false });
 
 export const haptics = {
   /** Light tap when both dots clear a gate. */
   pass(): void {
-    if (canVibrate()) navigator.vibrate(8);
+    engine.trigger('selection');
   },
 
   /** Heavier double-thump on a fatal hit. */
   hit(): void {
-    if (canVibrate()) navigator.vibrate([60, 30, 90]);
+    engine.trigger('error');
   }
 };

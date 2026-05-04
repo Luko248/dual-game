@@ -274,6 +274,7 @@ export class GameScene extends Phaser.Scene {
           this.speedMultTarget = BULLET_SPEED_MULT;
           sfx.play('combo');
           uiManager.updateBulletWalls(this.bulletWallsLeft);
+          uiManager.showBulletAlert();
         }
       }
 

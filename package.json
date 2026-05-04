@@ -8,7 +8,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "phaser": "^3.90.0"
+    "phaser": "^3.90.0",
+    "web-haptics": "^0.0.6"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

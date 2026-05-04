@@ -32,9 +32,11 @@ class UIManager {
   private bannerLevel!: HTMLElement;
   private bannerTimer?: ReturnType<typeof setTimeout>;
 
-  /* ghost alert */
+  /* power-up pickup alerts */
   private ghostAlert!: HTMLElement;
   private ghostTimer?: ReturnType<typeof setTimeout>;
+  private bulletAlert!: HTMLElement;
+  private bulletTimer?: ReturnType<typeof setTimeout>;
 
   /* game over */
   private gameoverUI!: HTMLElement;
@@ -63,6 +65,7 @@ class UIManager {
     this.bannerTheme   = document.getElementById('banner-theme')!;
     this.bannerLevel   = document.getElementById('banner-level')!;
     this.ghostAlert    = document.getElementById('ghost-alert')!;
+    this.bulletAlert   = document.getElementById('bullet-alert')!;
     this.gameoverUI    = document.getElementById('gameover-ui')!;
     this.goTitle       = document.getElementById('go-title')!;
     this.goScore       = document.getElementById('go-score')!;
@@ -86,6 +89,7 @@ class UIManager {
     this.introHint.classList.remove('intro-fading');
     this.gameBanner.classList.add('ui-hidden');
     this.ghostAlert.classList.add('ui-hidden');
+    this.bulletAlert.classList.add('ui-hidden');
     this.gameoverUI.classList.add('ui-hidden');
   }
 
@@ -196,17 +200,28 @@ class UIManager {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  GHOST ALERT                                                        */
+  /*  POWER-UP PICKUP ALERTS                                             */
+  /*  Both ride the same 2s slide-up + fade keyframe.                    */
   /* ------------------------------------------------------------------ */
 
   showGhostAlert(): void {
-    this.ghostAlert.classList.remove('ui-hidden', 'ui-ghost-anim');
+    this.ghostAlert.classList.remove('ui-hidden', 'ui-pickup-alert-anim');
     void this.ghostAlert.offsetWidth;
-    this.ghostAlert.classList.add('ui-ghost-anim');
+    this.ghostAlert.classList.add('ui-pickup-alert-anim');
     if (this.ghostTimer) clearTimeout(this.ghostTimer);
     this.ghostTimer = setTimeout(() => {
       this.ghostAlert.classList.add('ui-hidden');
-    }, 700);
+    }, 2000);
+  }
+
+  showBulletAlert(): void {
+    this.bulletAlert.classList.remove('ui-hidden', 'ui-pickup-alert-anim');
+    void this.bulletAlert.offsetWidth;
+    this.bulletAlert.classList.add('ui-pickup-alert-anim');
+    if (this.bulletTimer) clearTimeout(this.bulletTimer);
+    this.bulletTimer = setTimeout(() => {
+      this.bulletAlert.classList.add('ui-hidden');
+    }, 2000);
   }
 
   /* ------------------------------------------------------------------ */
