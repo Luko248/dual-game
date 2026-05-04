@@ -86,7 +86,7 @@ canvas {
 /* ── All individual text nodes use absolute positioning ── */
 #menu-title, #menu-tagline, #menu-howto-header,
 #menu-spread, #menu-gather, #menu-survive,
-#menu-controls, #menu-ghost-row,
+#menu-controls, #menu-ghost-row, #menu-bullet-row,
 #menu-best, #menu-lvl, #menu-prompt,
 #hud-best-banner, #hud-score, #hud-combo,
 #hud-ghost, #hud-bullet,
@@ -247,6 +247,40 @@ canvas {
 }
 
 #menu-ghost-text {
+  font-size: 14px;
+  color: #9999bb;
+  letter-spacing: 0.04em;
+}
+
+/* Bullet-time row: green dot + label */
+#menu-bullet-row {
+  top: 492px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#menu-bullet-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  position: relative;
+}
+#menu-bullet-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #44ff66;
+  box-shadow: 0 0 6px rgba(68,255,102,0.6), 0 0 12px rgba(68,255,102,0.3);
+}
+
+#menu-bullet-text {
   font-size: 14px;
   color: #9999bb;
   letter-spacing: 0.04em;

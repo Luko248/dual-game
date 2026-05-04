@@ -10,6 +10,7 @@ import {
   BULLET_RADIUS, BULLET_WALL_COUNT, BULLET_SPEED_MULT, BULLET_TRANSITION
 } from '../config/constants';
 import { sfx } from '../engine/SoundEngine';
+import { haptics } from '../engine/Haptics';
 import { InputManager } from '../engine/InputManager';
 import { ObstaclePool } from '../engine/ObstaclePool';
 import { Renderer, DeathParticle } from '../engine/Renderer';
@@ -282,6 +283,7 @@ export class GameScene extends Phaser.Scene {
         this.maxCombo = Math.max(this.maxCombo, this.combo);
         this.score   += Math.min(this.combo, MAX_COMBO_MULTI);
         sfx.play('pass');
+        haptics.pass();
 
         if (this.score > this.hiScore && !this.newBest) {
           this.newBest = true;
@@ -365,6 +367,7 @@ export class GameScene extends Phaser.Scene {
     this.gfx.flickering = false;
     this.flickerPhase   = 0;
     sfx.play('die');
+    haptics.hit();
     this.shakeAmt = 10;
 
     /* save high score */
