@@ -1,4 +1,5 @@
 import { THEMES, TOTAL_LEVELS, MAX_COMBO_MULTI } from '../config/constants';
+import type { LbRow } from './Leaderboard';
 
 /* Virtual canvas size — matches Phaser's 400×640 space */
 const VW = 400;
@@ -42,6 +43,20 @@ class UIManager {
   private lastScore = -1;
   private lastCombo = -1;
 
+  /* leaderboard */
+  private leaderboardUI!: HTMLElement;
+  private lbScope!: HTMLElement;
+  private lbNameInput!: HTMLInputElement;
+  private lbList!: HTMLElement;
+  private lbStatus!: HTMLElement;
+  private menuLeaderboardBtn!: HTMLElement;
+  private lbBack!: HTMLElement;
+
+  /* leaderboard callbacks (wired by the menu scene) */
+  onShowLeaderboard?: () => void;
+  onHideLeaderboard?: () => void;
+  onNameChange?: (name: string) => void;
+
   /* game over */
   private gameoverUI!: HTMLElement;
   private goTitle!: HTMLElement;
@@ -70,6 +85,13 @@ class UIManager {
     this.bannerLevel   = document.getElementById('banner-level')!;
     this.ghostAlert    = document.getElementById('ghost-alert')!;
     this.bulletAlert   = document.getElementById('bullet-alert')!;
+    this.leaderboardUI = document.getElementById('leaderboard-ui')!;
+    this.lbScope       = document.getElementById('lb-scope')!;
+    this.lbNameInput   = document.getElementById('lb-name-input') as HTMLInputElement;
+    this.lbList        = document.getElementById('lb-list')!;
+    this.lbStatus      = document.getElementById('lb-status')!;
+    this.menuLeaderboardBtn = document.getElementById('menu-leaderboard-btn')!;
+    this.lbBack        = document.getElementById('lb-back')!;
     this.gameoverUI    = document.getElementById('gameover-ui')!;
     this.goTitle       = document.getElementById('go-title')!;
     this.goScore       = document.getElementById('go-score')!;
@@ -77,6 +99,18 @@ class UIManager {
     this.goCombo       = document.getElementById('go-combo')!;
     this.goLevel       = document.getElementById('go-level')!;
     this.goRetry       = document.getElementById('go-retry')!;
+
+    /* leaderboard navigation + name editing */
+    this.menuLeaderboardBtn.addEventListener('click', () => this.onShowLeaderboard?.());
+    this.lbBack.addEventListener('click', () => this.onHideLeaderboard?.());
+    /* commit name on Enter / blur */
+    this.lbNameInput.addEventListener('change', () => {
+      this.onNameChange?.(this.lbNameInput.value);
+    });
+    this.lbNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') this.lbNameInput.blur();
+      e.stopPropagation();   // don't let Phaser's keyboard see typing
+    });
 
     this.updateScale();
   }
@@ -94,6 +128,7 @@ class UIManager {
     this.gameBanner.classList.add('ui-hidden');
     this.ghostAlert.classList.add('ui-hidden');
     this.bulletAlert.classList.add('ui-hidden');
+    this.leaderboardUI.classList.add('ui-hidden');
     this.gameoverUI.classList.add('ui-hidden');
   }
 
@@ -233,6 +268,59 @@ class UIManager {
     this.bulletTimer = setTimeout(() => {
       this.bulletAlert.classList.add('ui-hidden');
     }, 2000);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  LEADERBOARD                                                         */
+  /* ------------------------------------------------------------------ */
+
+  showLeaderboard(name: string, global: boolean): void {
+    this.hideAll();
+    this.lbNameInput.value = name;
+    this.lbScope.textContent = global ? 'GLOBAL' : 'THIS DEVICE';
+    this.lbList.innerHTML = '';
+    this.lbStatus.textContent = 'Loading…';
+    this.leaderboardUI.classList.remove('ui-hidden');
+  }
+
+  renderLeaderboard(rows: LbRow[], global: boolean): void {
+    this.lbList.innerHTML = '';
+
+    if (rows.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'lb-empty';
+      empty.textContent = 'No scores yet — be the first!';
+      this.lbList.appendChild(empty);
+      this.lbStatus.textContent = '';
+      return;
+    }
+
+    for (const r of rows) {
+      const row = document.createElement('div');
+      row.className = 'lb-row' + (r.you ? ' lb-you' : '');
+
+      const rank = document.createElement('span');
+      rank.className = 'lb-rank';
+      rank.textContent = '#' + r.rank;
+
+      const nm = document.createElement('span');
+      nm.className = 'lb-name';
+      nm.textContent = r.name;
+
+      const sc = document.createElement('span');
+      sc.className = 'lb-score';
+      sc.textContent = r.score.toString();
+
+      row.append(rank, nm, sc);
+      this.lbList.appendChild(row);
+    }
+
+    this.lbStatus.textContent = global ? '' : 'Local board — set a PlayFab Title ID to go global';
+  }
+
+  setLeaderboardError(msg: string): void {
+    this.lbList.innerHTML = '';
+    this.lbStatus.textContent = msg;
   }
 
   /* ------------------------------------------------------------------ */

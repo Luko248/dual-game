@@ -31,6 +31,10 @@ export class ObstaclePool {
   items: Obstacle[] = [];
   private nextY = 0;
 
+  /** Current displayed level (1-based, = floor(score/100)+1). Updated by the
+      scene each frame and used to gate level-restricted power-ups. */
+  level = 1;
+
   /** Call once in create() to seed obstacles above the viewport */
   seed(startY: number, dist: number): void {
     let y = startY;
@@ -61,11 +65,11 @@ export class ObstaclePool {
 
     const ob: Obstacle = { y, leftGapX, rightGapX, gapW: gap, passed: false, nearFlag: false };
 
-    const level = Math.floor(dist / 600);
+    const distLevel = Math.floor(dist / 600);
     const sp = this.spacing(dist);
 
     /* ghost power-up — floats in open space below this wall */
-    if (level >= GHOST_MIN_LEVEL && Math.random() < GHOST_SPAWN_CHANCE) {
+    if (distLevel >= GHOST_MIN_LEVEL && Math.random() < GHOST_SPAWN_CHANCE) {
       ob.ghostY = y + sp * 0.5;
       const inLeft = Math.random() < 0.5;
       ob.ghostX = inLeft
@@ -74,8 +78,9 @@ export class ObstaclePool {
       ob.ghostCollected = false;
     }
 
-    /* bullet time power-up — only if no ghost on this obstacle */
-    if (ob.ghostX == null && level >= BULLET_MIN_LEVEL && Math.random() < BULLET_SPAWN_CHANCE) {
+    /* bullet time power-up — only if no ghost on this obstacle, and only once
+       the player has reached the displayed level gate (game is too slow before). */
+    if (ob.ghostX == null && this.level >= BULLET_MIN_LEVEL && Math.random() < BULLET_SPAWN_CHANCE) {
       ob.bulletY = y + sp * 0.5;
       const inLeft = Math.random() < 0.5;
       ob.bulletX = inLeft

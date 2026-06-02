@@ -73,7 +73,6 @@ canvas {
 /* ── Container layers
    Must match #ui-inner size so that children's
    left: 50% resolves to 50% of 400px = 200px  ── */
-#menu-ui,
 #game-hud,
 #gameover-ui {
   position: absolute;
@@ -83,11 +82,22 @@ canvas {
   height: 640px;
 }
 
-/* ── All individual text nodes use absolute positioning ── */
-#menu-title, #menu-tagline, #menu-howto-header,
-#menu-spread, #menu-gather, #menu-survive,
-#menu-controls, #menu-ghost-row, #menu-bullet-row,
-#menu-best, #menu-lvl, #menu-prompt,
+/* Menu uses a centered flex column so spacing scales gracefully. */
+#menu-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 60px 30px 44px;
+}
+
+/* ── HUD / game-over text nodes use absolute positioning.
+   The menu uses a flex-column layout instead (see MENU SCREEN). ── */
 #hud-best-banner, #hud-score, #hud-combo,
 #hud-ghost, #hud-bullet,
 #joystick-left, #joystick-right,
@@ -148,91 +158,118 @@ canvas {
 
 /* ═══════════════════════════════════════════
    MENU SCREEN
-   Coordinates match Phaser's 400×640 space.
-   left: 50% = 200px (center) inside the
-   400px-wide #menu-ui container.
+   Flex-column layout inside the 400×640 menu.
+   Three bands (header / card / footer) are spread
+   apart with justify-content: space-between so the
+   screen breathes on every device.
 ═══════════════════════════════════════════ */
 
+/* ── Header band ── */
+#menu-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
 #menu-title {
-  top: 112px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 90px;
+  font-size: 86px;
   font-weight: bold;
   color: #ffffff;
-  letter-spacing: 0.06em;
-  text-shadow: 0 0 30px rgba(255,255,255,0.25);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 34px rgba(255,255,255,0.3);
 }
 
 #menu-tagline {
-  top: 204px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 19px;
-  color: #aaaacc;
-  letter-spacing: 0.08em;
+  font-size: 18px;
+  color: #b6b6da;
+  letter-spacing: 0.1em;
+}
+
+/* ── How-to card — translucent panel for readability ── */
+#menu-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.25) inset;
 }
 
 #menu-howto-header {
-  top: 314px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
-  color: #b8b8d8;
-  letter-spacing: 0.14em;
+  color: #8f8fc4;
+  letter-spacing: 0.28em;
+  margin-bottom: 2px;
 }
 
-#menu-spread {
-  top: 342px;
-  left: 50%;
-  transform: translateX(-50%);
+/* Two-column gesture → result rows */
+.menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   font-size: 16px;
-  color: #9999bb;
-  letter-spacing: 0.04em;
 }
 
-#menu-gather {
-  top: 364px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 16px;
-  color: #9999bb;
+.menu-row-label {
+  color: #c8c8e6;
+}
+
+.menu-row-arrow {
+  color: #5d5d86;
+  font-size: 15px;
+}
+
+.menu-row-value {
+  color: #ffffff;
+  font-weight: bold;
   letter-spacing: 0.04em;
 }
 
 #menu-survive {
-  top: 394px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 16px;
-  color: #9999bb;
-  letter-spacing: 0.04em;
-}
-
-#menu-controls {
-  top: 428px;
-  left: 50%;
-  transform: translateX(-50%);
   font-size: 14px;
-  color: #9999bb;
-  letter-spacing: 0.04em;
+  color: #8a8ab0;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
 }
 
-/* Ghost row: icon + label, centered as a flex row */
-#menu-ghost-row {
-  top: 462px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
+.menu-divider {
+  width: 70%;
+  height: 1px;
+  margin: 4px 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.14),
+    transparent
+  );
+}
+
+/* Power-up rows: icon + label */
+.menu-power-row {
+  display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  width: 100%;
+  max-width: 260px;
+}
+
+.menu-power-text {
+  font-size: 14px;
+  color: #b2b2d2;
+  letter-spacing: 0.03em;
 }
 
 /* CSS concentric circles mimicking the Phaser ghost icon */
 #menu-ghost-icon {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
   position: relative;
 }
@@ -244,31 +281,15 @@ canvas {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.8);
   box-shadow:
-    0 0 0 3.5px rgba(255,255,255,0.35),
-    0 0 0 7.5px rgba(255,255,255,0.12);
-}
-
-#menu-ghost-text {
-  font-size: 14px;
-  color: #9999bb;
-  letter-spacing: 0.04em;
-}
-
-/* Bullet-time row: green dot + label */
-#menu-bullet-row {
-  top: 492px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+    0 0 0 3.5px rgba(255,255,255,0.4),
+    0 0 0 7.5px rgba(255,255,255,0.15);
 }
 
 #menu-bullet-icon {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
   position: relative;
 }
@@ -277,44 +298,45 @@ canvas {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: #44ff66;
-  box-shadow: 0 0 6px rgba(68,255,102,0.6), 0 0 12px rgba(68,255,102,0.3);
+  box-shadow: 0 0 7px rgba(68,255,102,0.7), 0 0 14px rgba(68,255,102,0.35);
 }
 
-#menu-bullet-text {
-  font-size: 14px;
-  color: #9999bb;
-  letter-spacing: 0.04em;
+/* ── Footer band — stats + prompt ── */
+#menu-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+#menu-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
 }
 
 #menu-best {
-  top: 538px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 23px;
-  color: #b8b8d8;
+  font-size: 22px;
+  color: #d2d2ec;
   letter-spacing: 0.08em;
 }
 
 #menu-lvl {
-  top: 568px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 16px;
-  color: #9999bb;
-  letter-spacing: 0.1em;
+  font-size: 14px;
+  color: #8a8ab0;
+  letter-spacing: 0.12em;
 }
 
 #menu-prompt {
-  top: 592px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 18px;
-  color: #cccccc;
-  letter-spacing: 0.1em;
+  font-size: 17px;
+  color: #e0e0e0;
+  letter-spacing: 0.12em;
   animation: ui-prompt-breathe 2.8s ease-in-out infinite;
 }
 
@@ -671,4 +693,188 @@ canvas {
   color: #666677;
   letter-spacing: 0.12em;
   animation: ui-prompt-breathe 2.8s ease-in-out infinite;
+}
+
+
+/* ═══════════════════════════════════════════
+   BUTTONS (menu / leaderboard)
+   Need pointer-events:auto since the overlay
+   itself is pointer-events:none.
+═══════════════════════════════════════════ */
+
+.menu-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 0.18em;
+  color: #d8d8f0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 11px 26px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.menu-btn:hover,
+.menu-btn:active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+}
+
+
+/* ═══════════════════════════════════════════
+   LEADERBOARD SCREEN
+   Full-bleed flex column. pointer-events:auto so
+   taps here never fall through to the canvas
+   (which would otherwise start the game).
+═══════════════════════════════════════════ */
+
+#leaderboard-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 640px;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 26px 40px;
+  gap: 14px;
+}
+
+#lb-title {
+  font-size: 30px;
+  font-weight: bold;
+  color: #ffffff;
+  letter-spacing: 0.16em;
+  text-shadow: 0 0 24px rgba(255,255,255,0.3);
+}
+
+#lb-scope {
+  font-size: 12px;
+  color: #7a7aa6;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* Name editor */
+#lb-you {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 300px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#lb-you-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #8f8fc4;
+  letter-spacing: 0.18em;
+  flex-shrink: 0;
+}
+
+#lb-name-input {
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 16px;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  background: transparent;
+  border: none;
+  outline: none;
+  text-align: right;
+  pointer-events: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+#lb-name-input::placeholder {
+  color: #5d5d86;
+  letter-spacing: 0.04em;
+}
+
+/* Scrollable rank list */
+#lb-list {
+  width: 100%;
+  max-width: 320px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#lb-list::-webkit-scrollbar { width: 0; }
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.lb-row.lb-you {
+  background: rgba(0, 232, 255, 0.1);
+  border: 1px solid rgba(0, 232, 255, 0.3);
+}
+
+.lb-rank {
+  font-size: 14px;
+  font-weight: bold;
+  color: #7a7aa6;
+  width: 30px;
+  flex-shrink: 0;
+}
+
+.lb-row.lb-you .lb-rank { color: #00e8ff; }
+
+.lb-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  color: #d2d2ec;
+  letter-spacing: 0.03em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lb-row.lb-you .lb-name { color: #ffffff; font-weight: bold; }
+
+.lb-score {
+  font-size: 15px;
+  font-weight: bold;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.lb-empty {
+  margin-top: 30px;
+  font-size: 14px;
+  color: #6a6a90;
+  letter-spacing: 0.06em;
+  white-space: normal;
+  text-align: center;
+}
+
+#lb-status {
+  font-size: 12px;
+  color: #6a6a90;
+  letter-spacing: 0.08em;
+  min-height: 14px;
+  white-space: normal;
+  text-align: center;
 }

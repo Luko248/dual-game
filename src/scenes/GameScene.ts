@@ -15,6 +15,7 @@ import { InputManager } from '../engine/InputManager';
 import { ObstaclePool } from '../engine/ObstaclePool';
 import { Renderer, DeathParticle } from '../engine/Renderer';
 import { uiManager } from '../engine/UIManager';
+import { leaderboard } from '../engine/Leaderboard';
 
 interface Dot {
   x: number;
@@ -213,6 +214,8 @@ export class GameScene extends Phaser.Scene {
     this.speed = baseSpeed * this.speedMult;
     const scroll = this.speed * dt;
     this.dist += scroll;
+    /* keep the pool's level gate in sync with the displayed (score-based) level */
+    this.pool.level = Math.floor(this.score / 100) + 1;
     this.pool.scroll(scroll, this.dist);
 
     /* -- collision & scoring -- */
@@ -385,6 +388,9 @@ export class GameScene extends Phaser.Scene {
       this.hiLevel = levelReached;
       localStorage.setItem(HI_LEVEL_KEY, levelReached.toString());
     }
+
+    /* submit to the leaderboard (keeps only the best, keyed by device UID) */
+    leaderboard.submit(this.score, levelReached);
 
     /* burst particles */
     const dot = which === 'left' ? this.leftDot : this.rightDot;

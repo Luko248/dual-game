@@ -26,7 +26,8 @@ No test runner or linter is configured. TypeScript checking uses `strict: true` 
   - `ObstaclePool` — Object-pooled obstacle spawning with procedural difficulty scaling (gap width, spacing, speed all tighten over distance). Spawns ghost and bullet-time pickups in the open space below selected walls.
   - `Renderer` — Layered Phaser Graphics drawing (bg → walls → trails → dots → fx). Handles themed backgrounds, portal gate effects, flicker/glitch, glow trails, death particles.
   - `SoundEngine` — Web Audio synth singleton (procedural sounds, no audio files). Global `sfx` instance, fails silently.
-  - `UIManager` — Owns the HTML overlay (`#ui-inner`, fixed 400×640 virtual canvas scaled via CSS `svi`/`svb`). Switches between menu / HUD / game-over views, drives the intro demo class on `#game-hud`, and renders the bullet-walls and ghost-charges indicators.
+  - `UIManager` — Owns the HTML overlay (`#ui-inner`, fixed 400×640 virtual canvas scaled via CSS `svi`/`svb`). Switches between menu / HUD / leaderboard / game-over views, drives the intro demo class on `#game-hud`, and renders the bullet-walls and ghost-charges indicators.
+  - `Leaderboard` — Provider-based score board (no backend of ours, no paid API). Defaults to a **local** localStorage board; switches to a **global PlayFab** board when `VITE_PLAYFAB_TITLE_ID` is set (client REST only — the Title ID is public, no secret key). One row per device UID; only the max score is kept (locally via `max()`, on PlayFab via statistic aggregation = Maximum). See `.env.example` for PlayFab setup.
 - **`src/scenes/`** — Phaser scenes:
   - `MenuScene` — Title screen, demo dots, high score / level display.
   - `GameScene` — Main loop: physics → trails → scrolling → collision → theme transitions → flicker effects → rendering. Manages intro speed ramp, bullet-time speed transitions, and the death sequence with burst particles and restart.
@@ -36,12 +37,12 @@ No test runner or linter is configured. TypeScript checking uses `strict: true` 
 - **Independent dot control**: Each dot's velocity is driven by its own joystick (`leftDir()` / `rightDir()`). Each dot is clamped to its own lane and collides independently against that lane's gate.
 - **No auto-movement**: Dots stay still when both thumbs are lifted (friction decays residual velocity). There is no auto-spread fallback and no "pause spreading inside a gate" rule.
 - **Progressive difficulty**: Speed, gap width, spacing, and gap offset all scale with `sqrt(distance)` (constants define min/max curves).
-- **Intro phase**: First 3 seconds use `INTRO_SPEED_MULT` (0.3×) to ease the player in. The `#game-hud` carries an `intro-demo` class during this window so the joystick knobs auto-animate left-right as a control hint; the class is removed when the player first touches a joystick or when the timer expires.
+- **Intro phase**: First `INTRO_DURATION` (2.4s) uses `INTRO_SPEED_MULT` (0.5×) to ease the player in without feeling sluggish. The `#game-hud` carries an `intro-demo` class during this window so the joystick knobs auto-animate left-right as a control hint; the class is removed when the player first touches a joystick or when the timer expires.
 - **Theme cycling**: 10 themes rotate every 100 points with screen shake. Flicker effects activate at score 150+.
 - **Combo scoring**: Consecutive passes multiply points (max 10×). Near-misses (within 6px) trigger audio but don't break combo.
 - **Power-ups**:
   - **Ghost** (white concentric circle) — stacks; each charge phases through the next wall.
-  - **Bullet time** (green dot) — slows scroll to `BULLET_SPEED_MULT` (0.5×) for `BULLET_WALL_COUNT` (2) wall passes, then ramps back to full speed over `BULLET_TRANSITION` (400ms). The HUD timer shows the *remaining wall count*, not seconds.
+  - **Bullet time** (green dot) — only spawns from the displayed level `BULLET_MIN_LEVEL` (5) onward, since the early game is already slow. Slows scroll to `BULLET_SPEED_MULT` (0.5×) for `BULLET_WALL_COUNT` (2) wall passes, then ramps back to full speed over `BULLET_TRANSITION` (400ms). The HUD timer shows the *remaining wall count*, not seconds. (`ObstaclePool.level` is fed the live score-based level by `GameScene`.)
 - **No external assets**: All sounds are synthesized via Web Audio. Icons are inline SVG / CSS shapes.
 
 ### Joystick UI

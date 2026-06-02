@@ -3,6 +3,7 @@ import { W, H, C_BG } from './config/constants';
 import { MenuScene } from './scenes/MenuScene';
 import { GameScene } from './scenes/GameScene';
 import { uiManager } from './engine/UIManager';
+import { leaderboard } from './engine/Leaderboard';
 
 /* ---- Launch Phaser ---- */
 new Phaser.Game({
@@ -20,3 +21,6 @@ new Phaser.Game({
 
 /* ---- UI Overlay ---- */
 uiManager.init();
+
+/* ---- Leaderboard (device login happens lazily) ---- */
+leaderboard.init();

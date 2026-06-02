@@ -17,7 +17,7 @@ export const GAP_MIN = 36;
 export const WALL_H = 14;
 export const SPACING_INITIAL = 210;
 export const SPACING_MIN = 115;
-export const SPEED_INITIAL = 1.0;
+export const SPEED_INITIAL = 1.15;
 export const SPEED_GROWTH = 0.016;      // applied to sqrt(dist)
 export const GAP_SHRINK = 0.13;         // applied to sqrt(dist)
 export const SPACING_SHRINK = 0.34;     // applied to sqrt(dist)
@@ -75,7 +75,7 @@ export const GHOST_RADIUS = 12;
 export const C_GHOST = 0xffffff;
 
 /* Bullet time power-up */
-export const BULLET_MIN_LEVEL = 3;       // theme index (0-based) — starts at level 4
+export const BULLET_MIN_LEVEL = 5;       // displayed level (1-based) — only from level 5 onward
 export const BULLET_SPAWN_CHANCE = 0.06;
 export const BULLET_WALL_COUNT = 2;      // walls passed at half speed before reverting
 export const BULLET_SPEED_MULT = 0.5;    // speed multiplier during bullet time (half)
@@ -84,8 +84,8 @@ export const BULLET_RADIUS = 10;
 export const C_BULLET = 0x44ff66;        // green
 
 /* Intro phase */
-export const INTRO_DURATION = 3000;     // ms — slow start before full speed
-export const INTRO_SPEED_MULT = 0.3;    // speed multiplier during intro
+export const INTRO_DURATION = 2400;     // ms — slow start before full speed
+export const INTRO_SPEED_MULT = 0.5;    // speed multiplier during intro
 
 /* Storage */
 export const HI_SCORE_KEY = 'dual_hi';

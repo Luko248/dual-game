@@ -28,24 +28,60 @@
 
       <!-- ═══ MENU SCREEN ═══ -->
       <div id="menu-ui" class="ui-hidden">
-        <div id="menu-title">DUAL</div>
-        <div id="menu-tagline">Two dots. One mind.</div>
-        <div id="menu-howto-header">HOW TO PLAY</div>
-        <div id="menu-spread">thumbs apart&nbsp;&nbsp;spread</div>
-        <div id="menu-gather">thumbs together&nbsp;&nbsp;gather</div>
-        <div id="menu-survive">Both must survive.</div>
-        <div id="menu-controls">slide left or right</div>
-        <div id="menu-ghost-row">
-          <div id="menu-ghost-icon"></div>
-          <div id="menu-ghost-text">= phase through next wall</div>
+        <div id="menu-header">
+          <div id="menu-title">DUAL</div>
+          <div id="menu-tagline">Two dots. One mind.</div>
         </div>
-        <div id="menu-bullet-row">
-          <div id="menu-bullet-icon"></div>
-          <div id="menu-bullet-text">= slow time for 2 walls</div>
+
+        <div id="menu-card">
+          <div id="menu-howto-header">HOW TO PLAY</div>
+
+          <div class="menu-row">
+            <span class="menu-row-label">thumbs apart</span>
+            <span class="menu-row-arrow">&#8594;</span>
+            <span class="menu-row-value">spread</span>
+          </div>
+          <div class="menu-row">
+            <span class="menu-row-label">thumbs together</span>
+            <span class="menu-row-arrow">&#8594;</span>
+            <span class="menu-row-value">gather</span>
+          </div>
+          <div id="menu-survive">Both dots must survive.</div>
+
+          <div class="menu-divider"></div>
+
+          <div class="menu-power-row">
+            <div id="menu-ghost-icon"></div>
+            <span class="menu-power-text">phase through next wall</span>
+          </div>
+          <div class="menu-power-row">
+            <div id="menu-bullet-icon"></div>
+            <span class="menu-power-text">slow time for 2 walls</span>
+          </div>
         </div>
-        <div id="menu-best"></div>
-        <div id="menu-lvl"></div>
-        <div id="menu-prompt">TAP OR PRESS ANY KEY</div>
+
+        <div id="menu-footer">
+          <div id="menu-stats">
+            <div id="menu-best"></div>
+            <div id="menu-lvl"></div>
+          </div>
+          <button id="menu-leaderboard-btn" class="menu-btn" type="button">LEADERBOARD</button>
+          <div id="menu-prompt">TAP OR PRESS ANY KEY</div>
+        </div>
+      </div>
+
+      <!-- ═══ LEADERBOARD SCREEN ═══ -->
+      <div id="leaderboard-ui" class="ui-hidden">
+        <div id="lb-title">LEADERBOARD</div>
+        <div id="lb-scope"></div>
+        <div id="lb-you">
+          <span id="lb-you-label">YOU</span>
+          <input id="lb-name-input" type="text" maxlength="14" placeholder="enter name"
+                 autocomplete="off" autocapitalize="off" spellcheck="false" />
+        </div>
+        <div id="lb-list"></div>
+        <div id="lb-status"></div>
+        <button id="lb-back" class="menu-btn" type="button">BACK</button>
       </div>
 
       <!-- ═══ GAME HUD ═══ -->
