@@ -20,6 +20,7 @@ export class MenuScene extends Phaser.Scene {
     const hiScore = parseInt(localStorage.getItem(HI_SCORE_KEY) || '0', 10);
     const hiLevel = parseInt(localStorage.getItem(HI_LEVEL_KEY) || '0', 10);
     uiManager.showMenu(hiScore, hiLevel);
+    uiManager.setMuteLabel(sfx.isMuted());
 
     /* ---- start trigger (guarded so the leaderboard screen can intercept) ---- */
     const go = () => {
@@ -38,6 +39,12 @@ export class MenuScene extends Phaser.Scene {
     uiManager.onNameChange = (name) => {
       leaderboard.setName(name).then(() => this.refreshLeaderboard());
     };
+
+    /* ---- sound toggle ---- */
+    uiManager.onToggleMute = () => {
+      sfx.init();                 // ensure the audio graph exists (user gesture)
+      uiManager.setMuteLabel(sfx.toggleMute());
+    };
   }
 
   private openLeaderboard(): void {
@@ -50,6 +57,7 @@ export class MenuScene extends Phaser.Scene {
   private closeLeaderboard(hiScore: number, hiLevel: number): void {
     this.navLocked = false;
     uiManager.showMenu(hiScore, hiLevel);
+    uiManager.setMuteLabel(sfx.isMuted());
   }
 
   private refreshLeaderboard(): void {

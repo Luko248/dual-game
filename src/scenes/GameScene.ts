@@ -10,6 +10,7 @@ import {
   BULLET_RADIUS, BULLET_WALL_COUNT, BULLET_SPEED_MULT, BULLET_TRANSITION
 } from '../config/constants';
 import { sfx } from '../engine/SoundEngine';
+import { music } from '../engine/Music';
 import { haptics } from '../engine/Haptics';
 import { InputManager } from '../engine/InputManager';
 import { ObstaclePool } from '../engine/ObstaclePool';
@@ -148,6 +149,10 @@ export class GameScene extends Phaser.Scene {
 
     /* show HUD overlay */
     uiManager.showHUD();
+
+    /* start procedural background music (idempotent across restarts) */
+    music.setLevel(1);
+    music.start();
   }
 
   /* ---- helpers ---- */
@@ -260,7 +265,7 @@ export class GameScene extends Phaser.Scene {
         if (ldx * ldx + ldy * ldy < gr2 || rdx * rdx + rdy * rdy < gr2) {
           o.ghostCollected = true;
           this.ghostCharges++;
-          sfx.play('combo');
+          sfx.playGhost();
           uiManager.updateGhostCharges(this.ghostCharges);
           uiManager.showGhostAlert();
         }
@@ -277,7 +282,7 @@ export class GameScene extends Phaser.Scene {
           o.bulletCollected = true;
           this.bulletWallsLeft = BULLET_WALL_COUNT;
           this.speedMultTarget = BULLET_SPEED_MULT;
-          sfx.play('combo');
+          sfx.play('bullet');
           uiManager.updateBulletWalls(this.bulletWallsLeft);
           uiManager.showBulletAlert();
         }
@@ -288,7 +293,8 @@ export class GameScene extends Phaser.Scene {
         this.combo++;
         this.maxCombo = Math.max(this.maxCombo, this.combo);
         this.score   += Math.min(this.combo, MAX_COMBO_MULTI);
-        sfx.play('pass');
+        /* pitch rises with the combo for a satisfying streak feel */
+        sfx.play('pass', 1 + Math.min(this.combo, MAX_COMBO_MULTI) * 0.035);
         haptics.pass();
 
         if (this.score > this.hiScore && !this.newBest) {
@@ -300,7 +306,10 @@ export class GameScene extends Phaser.Scene {
         if (this.bulletWallsLeft > 0) {
           this.bulletWallsLeft--;
           uiManager.updateBulletWalls(this.bulletWallsLeft);
-          if (this.bulletWallsLeft === 0) this.speedMultTarget = 1;
+          if (this.bulletWallsLeft === 0) {
+            this.speedMultTarget = 1;
+            sfx.play('bulletEnd');
+          }
         }
       }
     }
@@ -311,7 +320,8 @@ export class GameScene extends Phaser.Scene {
       this.currentTheme = themeIndex;
       this.gfx.setTheme(themeIndex);
       this.shakeAmt = 6;
-      sfx.play('combo');
+      sfx.playLevelUp();
+      music.setLevel(themeIndex + 1);
 
       const theme = THEMES[themeIndex % THEMES.length];
       uiManager.showBanner(theme.name, themeIndex + 1);
@@ -372,6 +382,7 @@ export class GameScene extends Phaser.Scene {
     this.combo    = 0;
     this.gfx.flickering = false;
     this.flickerPhase   = 0;
+    music.stop();
     sfx.play('die');
     haptics.hit();
     this.shakeAmt = 10;

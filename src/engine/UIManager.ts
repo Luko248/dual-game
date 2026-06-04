@@ -51,11 +51,13 @@ class UIManager {
   private lbStatus!: HTMLElement;
   private menuLeaderboardBtn!: HTMLElement;
   private lbBack!: HTMLElement;
+  private menuMuteBtn!: HTMLElement;
 
-  /* leaderboard callbacks (wired by the menu scene) */
+  /* leaderboard + audio callbacks (wired by the menu scene) */
   onShowLeaderboard?: () => void;
   onHideLeaderboard?: () => void;
   onNameChange?: (name: string) => void;
+  onToggleMute?: () => void;
 
   /* game over */
   private gameoverUI!: HTMLElement;
@@ -91,6 +93,7 @@ class UIManager {
     this.lbList        = document.getElementById('lb-list')!;
     this.lbStatus      = document.getElementById('lb-status')!;
     this.menuLeaderboardBtn = document.getElementById('menu-leaderboard-btn')!;
+    this.menuMuteBtn   = document.getElementById('menu-mute-btn')!;
     this.lbBack        = document.getElementById('lb-back')!;
     this.gameoverUI    = document.getElementById('gameover-ui')!;
     this.goTitle       = document.getElementById('go-title')!;
@@ -102,6 +105,7 @@ class UIManager {
 
     /* leaderboard navigation + name editing */
     this.menuLeaderboardBtn.addEventListener('click', () => this.onShowLeaderboard?.());
+    this.menuMuteBtn.addEventListener('click', () => this.onToggleMute?.());
     this.lbBack.addEventListener('click', () => this.onHideLeaderboard?.());
     /* commit name on Enter / blur */
     this.lbNameInput.addEventListener('change', () => {
@@ -145,6 +149,11 @@ class UIManager {
 
   hideMenu(): void {
     this.menuUI.classList.add('ui-hidden');
+  }
+
+  setMuteLabel(muted: boolean): void {
+    this.menuMuteBtn.textContent = muted ? 'SOUND OFF' : 'SOUND ON';
+    this.menuMuteBtn.classList.toggle('is-muted', muted);
   }
 
   /* ------------------------------------------------------------------ */

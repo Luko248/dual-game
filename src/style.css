@@ -333,6 +333,18 @@ canvas {
   letter-spacing: 0.12em;
 }
 
+#menu-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#menu-mute-btn.is-muted {
+  color: #8a8ab0;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
 #menu-prompt {
   font-size: 17px;
   color: #e0e0e0;
