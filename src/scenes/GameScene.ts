@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import {
   W, H, HALF, DOT_R, DOT_Y, WALL_H,
   ACCEL, FRICTION, MAX_VEL, TRAIL_LEN,
-  SPEED_INITIAL, SPEED_GROWTH, MAX_COMBO_MULTI,
+  SPEED_INITIAL, SPEED_GROWTH, MAX_COMBO_MULTI, ADVANCED_SPEED_MULT,
   C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY, HI_LEVEL_KEY,
   THEMES, FLICKER_START_SCORE, FLICKER_INTERVAL_MIN,
   FLICKER_INTERVAL_MAX, FLICKER_DURATION,
@@ -53,6 +53,9 @@ export class GameScene extends Phaser.Scene {
   private leftTrail!: number[];
   private rightTrail!: number[];
 
+  /* game mode — advanced = each thumb steers its own dot independently */
+  private advanced!: boolean;
+
   /* intro phase */
   private introTimer!: number;
   private introActive!: boolean;
@@ -83,7 +86,9 @@ export class GameScene extends Phaser.Scene {
     super('Game');
   }
 
-  create(): void {
+  create(data?: { advanced?: boolean }): void {
+    this.advanced = !!data?.advanced;
+
     this.cameras.main.setBackgroundColor(C_BG);
 
     /* player state */
@@ -135,8 +140,9 @@ export class GameScene extends Phaser.Scene {
     this.retryShown     = false;
 
     /* subsystems */
-    this.input_ = new InputManager(this);
+    this.input_ = new InputManager(this, this.advanced);
     this.pool   = new ObstaclePool();
+    this.pool.advanced = this.advanced;
     this.pool.seed(DOT_Y - 250, this.dist);
 
     this.gfx = new Renderer({
@@ -148,7 +154,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     /* show HUD overlay */
-    uiManager.showHUD();
+    uiManager.showHUD(this.advanced);
 
     /* start procedural background music (idempotent across restarts) */
     music.setLevel(1);
@@ -192,13 +198,20 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    /* -- physics: mirrored spread/gather, driven by the stronger thumb so
-       a small timing skew between the two thumbs cannot desync the dots -- */
-    const spread = this.input_.spreadDir();
+    /* -- physics --
+       Normal: mirrored spread/gather, driven by the stronger thumb so a small
+         timing skew between the two thumbs cannot desync the dots.
+       Advanced: each thumb steers its own dot independently — no coupling. */
     const accelStep = ACCEL * dt;
     const frictionStep = Math.pow(FRICTION, dt);
-    this.leftDot.vx  += -spread * accelStep;
-    this.rightDot.vx +=  spread * accelStep;
+    if (this.advanced) {
+      this.leftDot.vx  += this.input_.leftDir()  * accelStep;
+      this.rightDot.vx += this.input_.rightDir() * accelStep;
+    } else {
+      const spread = this.input_.spreadDir();
+      this.leftDot.vx  += -spread * accelStep;
+      this.rightDot.vx +=  spread * accelStep;
+    }
     this.leftDot.vx  *= frictionStep;
     this.rightDot.vx *= frictionStep;
     this.leftDot.vx  = Phaser.Math.Clamp(this.leftDot.vx, -MAX_VEL, MAX_VEL);
@@ -215,7 +228,8 @@ export class GameScene extends Phaser.Scene {
     if (this.rightTrail.length > TRAIL_LEN) this.rightTrail.shift();
 
     /* -- scroll (with smooth speed multiplier) -- */
-    const baseSpeed = SPEED_INITIAL + Math.sqrt(this.dist) * SPEED_GROWTH;
+    const diffMult = this.advanced ? ADVANCED_SPEED_MULT : 1;
+    const baseSpeed = (SPEED_INITIAL + Math.sqrt(this.dist) * SPEED_GROWTH) * diffMult;
     this.speed = baseSpeed * this.speedMult;
     const scroll = this.speed * dt;
     this.dist += scroll;
@@ -465,9 +479,9 @@ export class GameScene extends Phaser.Scene {
       uiManager.showRetry();
     }
 
-    /* restart */
+    /* restart — keep the same mode */
     if (this.deathTimer > 1000 && this.input_.anyPressed()) {
-      this.scene.start('Game');
+      this.scene.start('Game', { advanced: this.advanced });
     }
   }
 }

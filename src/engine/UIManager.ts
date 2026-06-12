@@ -20,6 +20,7 @@ class UIManager {
   private hudBestBanner!: HTMLElement;
   /* intro hint */
   private introHint!: HTMLElement;
+  private introLabel!: HTMLElement;
 
   /* power-up indicators */
   private hudGhost!: HTMLElement;
@@ -52,12 +53,14 @@ class UIManager {
   private menuLeaderboardBtn!: HTMLElement;
   private lbBack!: HTMLElement;
   private menuMuteBtn!: HTMLElement;
+  private menuAdvancedBtn!: HTMLElement;
 
-  /* leaderboard + audio callbacks (wired by the menu scene) */
+  /* leaderboard + audio + mode callbacks (wired by the menu scene) */
   onShowLeaderboard?: () => void;
   onHideLeaderboard?: () => void;
   onNameChange?: (name: string) => void;
   onToggleMute?: () => void;
+  onStartAdvanced?: () => void;
 
   /* game over */
   private gameoverUI!: HTMLElement;
@@ -78,6 +81,7 @@ class UIManager {
     this.hudCombo      = document.getElementById('hud-combo')!;
     this.hudBestBanner = document.getElementById('hud-best-banner')!;
     this.introHint     = document.getElementById('intro-hint')!;
+    this.introLabel    = document.getElementById('intro-label')!;
     this.hudGhost      = document.getElementById('hud-ghost')!;
     this.hudGhostCount = document.getElementById('hud-ghost-count')!;
     this.hudBullet     = document.getElementById('hud-bullet')!;
@@ -94,6 +98,7 @@ class UIManager {
     this.lbStatus      = document.getElementById('lb-status')!;
     this.menuLeaderboardBtn = document.getElementById('menu-leaderboard-btn')!;
     this.menuMuteBtn   = document.getElementById('menu-mute-btn')!;
+    this.menuAdvancedBtn = document.getElementById('menu-advanced-btn')!;
     this.lbBack        = document.getElementById('lb-back')!;
     this.gameoverUI    = document.getElementById('gameover-ui')!;
     this.goTitle       = document.getElementById('go-title')!;
@@ -106,6 +111,7 @@ class UIManager {
     /* leaderboard navigation + name editing */
     this.menuLeaderboardBtn.addEventListener('click', () => this.onShowLeaderboard?.());
     this.menuMuteBtn.addEventListener('click', () => this.onToggleMute?.());
+    this.menuAdvancedBtn.addEventListener('click', () => this.onStartAdvanced?.());
     this.lbBack.addEventListener('click', () => this.onHideLeaderboard?.());
     /* commit name on Enter / blur */
     this.lbNameInput.addEventListener('change', () => {
@@ -160,7 +166,7 @@ class UIManager {
   /*  GAME HUD                                                           */
   /* ------------------------------------------------------------------ */
 
-  showHUD(): void {
+  showHUD(advanced = false): void {
     this.hideAll();
     this.hudScore.textContent        = '0';
     this.hudCombo.style.opacity      = '0';
@@ -169,6 +175,11 @@ class UIManager {
     this.hudBullet.classList.add('ui-hidden');
     this.gameHUD.classList.remove('ui-hidden');
     this.gameHUD.classList.add('intro-demo');
+    /* advanced mode: each thumb its own dot — change the hint + demo motion */
+    this.gameHUD.classList.toggle('mode-advanced', advanced);
+    this.introLabel.textContent = advanced
+      ? 'EACH THUMB → ITS OWN DOT'
+      : 'SLIDE THUMBS ← →';
     this.introHint.classList.remove('ui-hidden', 'intro-fading');
     /* reset change-detection caches so the first per-frame update writes */
     this.lastScore = -1;

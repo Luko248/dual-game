@@ -7,6 +7,8 @@ const JOYSTICK_MAX = 40;
 
 export class InputManager {
   private scene: Phaser.Scene;
+  /** Advanced mode: each thumb / key set drives its own dot independently. */
+  private advanced: boolean;
   private leftTouch:  Phaser.Input.Pointer | null = null;
   private rightTouch: Phaser.Input.Pointer | null = null;
   private leftKnob:   HTMLElement | null = null;
@@ -17,8 +19,9 @@ export class InputManager {
   private keyD!:      Phaser.Input.Keyboard.Key;
   private keySpace!:  Phaser.Input.Keyboard.Key;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, advanced = false) {
     this.scene     = scene;
+    this.advanced  = advanced;
     this.leftKnob  = document.getElementById('joystick-left-knob');
     this.rightKnob = document.getElementById('joystick-right-knob');
 
@@ -78,19 +81,32 @@ export class InputManager {
     if (knob) knob.style.transform = 'translate(-50%, -50%)';
   }
 
-  /** -1..+1 for left dot. Left = negative, right = positive. */
+  /** -1..+1 for left dot. Left = negative, right = positive.
+   *  Advanced keyboard: A/D steer the left dot on its own.
+   *  Normal keyboard: arrows/A/D/Space map to spread/gather (mirrored). */
   leftDir(): number {
-    if (this.keyLeft.isDown  || this.keyA.isDown)     return -1;
-    if (this.keyRight.isDown || this.keyD.isDown || this.keySpace.isDown) return 1;
+    if (this.advanced) {
+      if (this.keyA.isDown) return -1;
+      if (this.keyD.isDown) return  1;
+    } else {
+      if (this.keyLeft.isDown  || this.keyA.isDown)     return -1;
+      if (this.keyRight.isDown || this.keyD.isDown || this.keySpace.isDown) return 1;
+    }
     if (!this.leftTouch) return 0;
     return Math.max(-1, Math.min(1, (this.leftTouch.x - this.leftTouch.downX) / JOYSTICK_MAX));
   }
 
   /** -1..+1 for right dot. Left = negative, right = positive.
-   *  Keyboard uses spread/gather: left key mirrors left dot. */
+   *  Advanced keyboard: ←/→ steer the right dot on its own.
+   *  Normal keyboard: left key mirrors (spread/gather). */
   rightDir(): number {
-    if (this.keyLeft.isDown  || this.keyA.isDown)     return  1;
-    if (this.keyRight.isDown || this.keyD.isDown || this.keySpace.isDown) return -1;
+    if (this.advanced) {
+      if (this.keyLeft.isDown)  return -1;
+      if (this.keyRight.isDown) return  1;
+    } else {
+      if (this.keyLeft.isDown  || this.keyA.isDown)     return  1;
+      if (this.keyRight.isDown || this.keyD.isDown || this.keySpace.isDown) return -1;
+    }
     if (!this.rightTouch) return 0;
     return Math.max(-1, Math.min(1, (this.rightTouch.x - this.rightTouch.downX) / JOYSTICK_MAX));
   }

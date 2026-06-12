@@ -23,15 +23,17 @@ export class MenuScene extends Phaser.Scene {
     uiManager.setMuteLabel(sfx.isMuted());
 
     /* ---- start trigger (guarded so the leaderboard screen can intercept) ---- */
-    const go = () => {
+    const start = (advanced: boolean) => {
       if (this.navLocked) return;
       sfx.init();
       sfx.play('start');
       uiManager.hideMenu();
-      this.scene.start('Game');
+      this.scene.start('Game', { advanced });
     };
-    this.input.on('pointerdown', go);
-    this.input.keyboard!.on('keydown', go);
+    /* tap anywhere / any key → normal mode; the ADVANCED button → advanced */
+    this.input.on('pointerdown', () => start(false));
+    this.input.keyboard!.on('keydown', () => start(false));
+    uiManager.onStartAdvanced = () => start(true);
 
     /* ---- leaderboard navigation ---- */
     uiManager.onShowLeaderboard = () => this.openLeaderboard();

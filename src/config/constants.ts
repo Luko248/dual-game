@@ -87,6 +87,12 @@ export const C_BULLET = 0x44ff66;        // green
 export const INTRO_DURATION = 2400;     // ms — slow start before full speed
 export const INTRO_SPEED_MULT = 0.5;    // speed multiplier during intro
 
+/* Advanced mode — each thumb steers its own dot independently (no mirroring).
+   Harder by design, so it also runs a touch faster and decouples the two
+   lanes' gaps further. */
+export const ADVANCED_SPEED_MULT  = 1.2;   // overall scroll speed multiplier
+export const ADVANCED_OFFSET_MULT = 2.4;   // widens the left/right gap divergence
+
 /* Storage */
 export const HI_SCORE_KEY = 'dual_hi';
 export const HI_LEVEL_KEY = 'dual_lvl';

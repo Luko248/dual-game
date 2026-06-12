@@ -5,7 +5,8 @@ import {
   SPACING_INITIAL, SPACING_MIN, SPACING_SHRINK,
   OFFSET_GROWTH, H,
   GHOST_MIN_LEVEL, GHOST_SPAWN_CHANCE,
-  BULLET_MIN_LEVEL, BULLET_SPAWN_CHANCE
+  BULLET_MIN_LEVEL, BULLET_SPAWN_CHANCE,
+  ADVANCED_OFFSET_MULT
 } from '../config/constants';
 
 export interface Obstacle {
@@ -35,6 +36,9 @@ export class ObstaclePool {
       scene each frame and used to gate level-restricted power-ups. */
   level = 1;
 
+  /** Advanced mode widens how far the two lanes' gaps can diverge. */
+  advanced = false;
+
   /** Call once in create() to seed obstacles above the viewport */
   seed(startY: number, dist: number): void {
     let y = startY;
@@ -59,7 +63,11 @@ export class ObstaclePool {
 
     const leftGapX = Phaser.Math.Between(m, HALF - m);
     const mirror = W - leftGapX;
-    const maxOff = Math.min((gap - 2 * DOT_R) * 0.7, 3 + Math.sqrt(dist) * OFFSET_GROWTH);
+    /* Normal mode keeps gaps loosely mirrored; advanced decouples the lanes,
+       so it both widens the divergence and lifts the mirror-coupling cap. */
+    const cap = this.advanced ? (HALF - m) * 0.9 : (gap - 2 * DOT_R) * 0.7;
+    const offMult = this.advanced ? ADVANCED_OFFSET_MULT : 1;
+    const maxOff = Math.min(cap, (3 + Math.sqrt(dist) * OFFSET_GROWTH) * offMult);
     const offset = (Math.random() * 2 - 1) * maxOff;
     const rightGapX = Phaser.Math.Clamp(mirror + offset, HALF + m, W - m);
 
