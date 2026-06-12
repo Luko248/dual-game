@@ -1,5 +1,5 @@
 import { THEMES, TOTAL_LEVELS, MAX_COMBO_MULTI } from '../config/constants';
-import type { LbRow } from './Leaderboard';
+import type { LbRow, LbMode } from './Leaderboard';
 
 /* Virtual canvas size — matches Phaser's 400×640 space */
 const VW = 400;
@@ -50,6 +50,8 @@ class UIManager {
   private lbNameInput!: HTMLInputElement;
   private lbList!: HTMLElement;
   private lbStatus!: HTMLElement;
+  private lbTabNormal!: HTMLElement;
+  private lbTabAdvanced!: HTMLElement;
   private menuLeaderboardBtn!: HTMLElement;
   private lbBack!: HTMLElement;
   private menuMuteBtn!: HTMLElement;
@@ -61,6 +63,7 @@ class UIManager {
   onNameChange?: (name: string) => void;
   onToggleMute?: () => void;
   onStartAdvanced?: () => void;
+  onSelectMode?: (mode: LbMode) => void;
 
   /* game over */
   private gameoverUI!: HTMLElement;
@@ -96,6 +99,8 @@ class UIManager {
     this.lbNameInput   = document.getElementById('lb-name-input') as HTMLInputElement;
     this.lbList        = document.getElementById('lb-list')!;
     this.lbStatus      = document.getElementById('lb-status')!;
+    this.lbTabNormal   = document.getElementById('lb-tab-normal')!;
+    this.lbTabAdvanced = document.getElementById('lb-tab-advanced')!;
     this.menuLeaderboardBtn = document.getElementById('menu-leaderboard-btn')!;
     this.menuMuteBtn   = document.getElementById('menu-mute-btn')!;
     this.menuAdvancedBtn = document.getElementById('menu-advanced-btn')!;
@@ -113,6 +118,8 @@ class UIManager {
     this.menuMuteBtn.addEventListener('click', () => this.onToggleMute?.());
     this.menuAdvancedBtn.addEventListener('click', () => this.onStartAdvanced?.());
     this.lbBack.addEventListener('click', () => this.onHideLeaderboard?.());
+    this.lbTabNormal.addEventListener('click', () => this.onSelectMode?.('normal'));
+    this.lbTabAdvanced.addEventListener('click', () => this.onSelectMode?.('advanced'));
     /* commit name on Enter / blur */
     this.lbNameInput.addEventListener('change', () => {
       this.onNameChange?.(this.lbNameInput.value);
@@ -294,13 +301,22 @@ class UIManager {
   /*  LEADERBOARD                                                         */
   /* ------------------------------------------------------------------ */
 
-  showLeaderboard(name: string, global: boolean): void {
+  showLeaderboard(name: string, global: boolean, mode: LbMode): void {
     this.hideAll();
     this.lbNameInput.value = name;
     this.lbScope.textContent = global ? 'GLOBAL' : 'THIS DEVICE';
+    this.setLeaderboardMode(mode);
     this.lbList.innerHTML = '';
     this.lbStatus.textContent = 'Loading…';
     this.leaderboardUI.classList.remove('ui-hidden');
+  }
+
+  /** Highlight the active mode tab and show a loading state. */
+  setLeaderboardMode(mode: LbMode): void {
+    this.lbTabNormal.classList.toggle('is-active', mode === 'normal');
+    this.lbTabAdvanced.classList.toggle('is-active', mode === 'advanced');
+    this.lbList.innerHTML = '';
+    this.lbStatus.textContent = 'Loading…';
   }
 
   renderLeaderboard(rows: LbRow[], global: boolean): void {

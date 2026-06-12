@@ -2,11 +2,13 @@ import Phaser from 'phaser';
 import { C_BG, HI_SCORE_KEY, HI_LEVEL_KEY } from '../config/constants';
 import { sfx } from '../engine/SoundEngine';
 import { uiManager } from '../engine/UIManager';
-import { leaderboard } from '../engine/Leaderboard';
+import { leaderboard, LbMode } from '../engine/Leaderboard';
 
 export class MenuScene extends Phaser.Scene {
   /** true while the leaderboard screen is open — blocks tap/key-to-start */
   private navLocked = false;
+  /** which board the leaderboard screen is currently showing */
+  private lbMode: LbMode = 'normal';
 
   constructor() {
     super('Menu');
@@ -41,6 +43,11 @@ export class MenuScene extends Phaser.Scene {
     uiManager.onNameChange = (name) => {
       leaderboard.setName(name).then(() => this.refreshLeaderboard());
     };
+    uiManager.onSelectMode = (mode) => {
+      this.lbMode = mode;
+      uiManager.setLeaderboardMode(mode);
+      this.refreshLeaderboard();
+    };
 
     /* ---- sound toggle ---- */
     uiManager.onToggleMute = () => {
@@ -51,8 +58,9 @@ export class MenuScene extends Phaser.Scene {
 
   private openLeaderboard(): void {
     this.navLocked = true;
+    this.lbMode = 'normal';
     sfx.init();
-    uiManager.showLeaderboard(leaderboard.getName(), leaderboard.isGlobal());
+    uiManager.showLeaderboard(leaderboard.getName(), leaderboard.isGlobal(), this.lbMode);
     this.refreshLeaderboard();
   }
 
@@ -64,8 +72,16 @@ export class MenuScene extends Phaser.Scene {
 
   private refreshLeaderboard(): void {
     const global = leaderboard.isGlobal();
-    leaderboard.top(20)
-      .then(rows => uiManager.renderLeaderboard(rows, global))
-      .catch(() => uiManager.setLeaderboardError('Could not load leaderboard — check your connection'));
+    const mode = this.lbMode;
+    leaderboard.top(20, mode)
+      .then(rows => {
+        /* ignore a stale response if the user switched tabs meanwhile */
+        if (this.lbMode === mode) uiManager.renderLeaderboard(rows, global);
+      })
+      .catch(() => {
+        if (this.lbMode === mode) {
+          uiManager.setLeaderboardError('Could not load leaderboard — check your connection');
+        }
+      });
   }
 }

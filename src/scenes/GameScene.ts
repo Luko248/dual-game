@@ -414,8 +414,8 @@ export class GameScene extends Phaser.Scene {
       localStorage.setItem(HI_LEVEL_KEY, levelReached.toString());
     }
 
-    /* submit to the leaderboard (keeps only the best, keyed by device UID) */
-    leaderboard.submit(this.score, levelReached);
+    /* submit to the per-mode leaderboard (keeps only the best, keyed by UID) */
+    leaderboard.submit(this.score, levelReached, this.advanced ? 'advanced' : 'normal');
 
     /* burst particles */
     const dot = which === 'left' ? this.leftDot : this.rightDot;
