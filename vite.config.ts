@@ -3,9 +3,6 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   root: '.',
-  /* Served from a GitHub Pages project subpath (https://<user>.github.io/dual-game/).
-     Vite rebases built asset URLs in index.html to this base. */
-  base: '/dual-game/',
   publicDir: 'public',
   server: {
     port: 3000,
