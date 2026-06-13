@@ -4,6 +4,8 @@ import { uiManager } from './UIManager';
 import { HALF } from '../config/constants';
 
 const JOYSTICK_MAX = 40;
+/** Advanced mode keyboard travel per 60fps-frame (game units). */
+const KEY_MOVE_SPEED = 6;
 
 export class InputManager {
   private scene: Phaser.Scene;
@@ -11,6 +13,9 @@ export class InputManager {
   private advanced: boolean;
   private leftTouch:  Phaser.Input.Pointer | null = null;
   private rightTouch: Phaser.Input.Pointer | null = null;
+  /** Last-sampled finger x (game units) for 1:1 movement tracking. */
+  private leftPrevX = 0;
+  private rightPrevX = 0;
   private leftKnob:   HTMLElement | null = null;
   private rightKnob:  HTMLElement | null = null;
   private keyLeft!:   Phaser.Input.Keyboard.Key;
@@ -41,8 +46,10 @@ export class InputManager {
       uiManager.stopIntroDemo();
       if (p.x < HALF) {
         this.leftTouch = p;
+        this.leftPrevX = p.x;
       } else {
         this.rightTouch = p;
+        this.rightPrevX = p.x;
       }
     });
 
@@ -109,6 +116,28 @@ export class InputManager {
     }
     if (!this.rightTouch) return 0;
     return Math.max(-1, Math.min(1, (this.rightTouch.x - this.rightTouch.downX) / JOYSTICK_MAX));
+  }
+
+  /** Advanced mode — how far the LEFT dot should move this frame (game units),
+   *  mirroring the finger's actual movement 1:1 (no momentum). Keyboard (A/D)
+   *  moves at a fixed speed. `dt` is the 60fps-normalized frame delta. */
+  leftMove(dt: number): number {
+    if (this.keyA.isDown) return -KEY_MOVE_SPEED * dt;
+    if (this.keyD.isDown) return  KEY_MOVE_SPEED * dt;
+    if (!this.leftTouch) return 0;
+    const dx = this.leftTouch.x - this.leftPrevX;
+    this.leftPrevX = this.leftTouch.x;
+    return dx;
+  }
+
+  /** Advanced mode — LEFT's counterpart for the RIGHT dot (finger or ←/→). */
+  rightMove(dt: number): number {
+    if (this.keyLeft.isDown)  return -KEY_MOVE_SPEED * dt;
+    if (this.keyRight.isDown) return  KEY_MOVE_SPEED * dt;
+    if (!this.rightTouch) return 0;
+    const dx = this.rightTouch.x - this.rightPrevX;
+    this.rightPrevX = this.rightTouch.x;
+    return dx;
   }
 
   /** Combined spread / gather command (−1 = full gather, +1 = full spread).

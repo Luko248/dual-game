@@ -199,25 +199,27 @@ export class GameScene extends Phaser.Scene {
     }
 
     /* -- physics --
-       Normal: mirrored spread/gather, driven by the stronger thumb so a small
-         timing skew between the two thumbs cannot desync the dots.
-       Advanced: each thumb steers its own dot independently — no coupling. */
-    const accelStep = ACCEL * dt;
-    const frictionStep = Math.pow(FRICTION, dt);
+       Normal: mirrored spread/gather virtual-joystick with momentum, driven by
+         the stronger thumb so a small timing skew can't desync the dots.
+       Advanced: each dot tracks its own finger 1:1 (a perfect mirror of the
+         finger's movement) — fully independent, no coupling, no momentum. */
     if (this.advanced) {
-      this.leftDot.vx  += this.input_.leftDir()  * accelStep;
-      this.rightDot.vx += this.input_.rightDir() * accelStep;
+      this.leftDot.x  += this.input_.leftMove(dt);
+      this.rightDot.x += this.input_.rightMove(dt);
+      this.leftDot.vx = this.rightDot.vx = 0;
     } else {
+      const accelStep = ACCEL * dt;
+      const frictionStep = Math.pow(FRICTION, dt);
       const spread = this.input_.spreadDir();
       this.leftDot.vx  += -spread * accelStep;
       this.rightDot.vx +=  spread * accelStep;
+      this.leftDot.vx  *= frictionStep;
+      this.rightDot.vx *= frictionStep;
+      this.leftDot.vx  = Phaser.Math.Clamp(this.leftDot.vx, -MAX_VEL, MAX_VEL);
+      this.rightDot.vx = Phaser.Math.Clamp(this.rightDot.vx, -MAX_VEL, MAX_VEL);
+      this.leftDot.x  += this.leftDot.vx * dt;
+      this.rightDot.x += this.rightDot.vx * dt;
     }
-    this.leftDot.vx  *= frictionStep;
-    this.rightDot.vx *= frictionStep;
-    this.leftDot.vx  = Phaser.Math.Clamp(this.leftDot.vx, -MAX_VEL, MAX_VEL);
-    this.rightDot.vx = Phaser.Math.Clamp(this.rightDot.vx, -MAX_VEL, MAX_VEL);
-    this.leftDot.x  += this.leftDot.vx * dt;
-    this.rightDot.x += this.rightDot.vx * dt;
     this.leftDot.x  = Phaser.Math.Clamp(this.leftDot.x, DOT_R + 2, HALF - DOT_R - 2);
     this.rightDot.x = Phaser.Math.Clamp(this.rightDot.x, HALF + DOT_R + 2, W - DOT_R - 2);
 
