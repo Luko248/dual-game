@@ -93,7 +93,7 @@ canvas {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 46px 30px 34px;
+  padding: 40px 30px 30px;
 }
 
 /* ── HUD / game-over text nodes use absolute positioning.
@@ -169,11 +169,13 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  /* extra breathing room between the title and the how-to card below */
+  margin-bottom: 12px;
 }
 
 #menu-title {
-  font-size: 86px;
+  font-size: 74px;
   font-weight: bold;
   color: #ffffff;
   letter-spacing: 0.08em;
@@ -181,7 +183,7 @@ canvas {
 }
 
 #menu-tagline {
-  font-size: 18px;
+  font-size: 17px;
   color: #b6b6da;
   letter-spacing: 0.1em;
 }
@@ -192,8 +194,8 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 22px 20px;
+  gap: 11px;
+  padding: 18px 18px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -251,19 +253,39 @@ canvas {
   );
 }
 
-/* Power-up rows: icon + label */
+/* Power-ups section header */
+#menu-powerups-header {
+  font-size: 13px;
+  font-weight: bold;
+  color: #8f8fc4;
+  letter-spacing: 0.28em;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+/* Power-up rows: icon + name + effect */
 .menu-power-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  max-width: 260px;
+  max-width: 290px;
 }
 
+.menu-power-name {
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  min-width: 52px;
+}
+
+.menu-power-ghost { color: #ffffff; }
+.menu-power-bullet { color: #44ff66; }
+
 .menu-power-text {
-  font-size: 14px;
-  color: #b2b2d2;
-  letter-spacing: 0.03em;
+  font-size: 13px;
+  color: #a8a8cc;
+  letter-spacing: 0.02em;
 }
 
 /* CSS concentric circles mimicking the Phaser ghost icon */
@@ -310,7 +332,7 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 13px;
+  gap: 11px;
 }
 
 #menu-stats {

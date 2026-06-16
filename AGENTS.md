@@ -38,8 +38,8 @@ No test runner or linter is configured. TypeScript checking uses `strict: true` 
 - **No auto-movement**: Dots stay still when both thumbs are lifted (friction decays residual velocity). There is no auto-spread fallback and no "pause spreading inside a gate" rule.
 - **Progressive difficulty**: Speed, gap width, spacing, and gap offset all scale with `sqrt(distance)` (constants define min/max curves).
 - **Intro phase**: First `INTRO_DURATION` (2.4s) uses `INTRO_SPEED_MULT` (0.5×) to ease the player in without feeling sluggish. The `#game-hud` carries an `intro-demo` class during this window so the joystick knobs auto-animate left-right as a control hint; the class is removed when the player first touches a joystick or when the timer expires.
-- **Theme cycling**: 10 themes rotate every 100 points with screen shake. Flicker effects activate at score 150+.
-- **Combo scoring**: Consecutive passes multiply points (max 10×). Near-misses (within 6px) trigger audio but don't break combo.
+- **Theme cycling**: 10 themes rotate every `LEVEL_POINTS` (1000) points with screen shake. Flicker effects activate at score `FLICKER_START_SCORE` (1500+).
+- **Combo scoring**: Each gate scores `BASE_PASS_SCORE` (10) × the live combo multiplier (consecutive passes, capped at `MAX_COMBO_MULTI` = 10×), so a ×2 gate is worth double a ×1 gate. Near-misses (within 6px) trigger audio but don't break combo. (`LEVEL_POINTS` is 100× the base so the gates-per-level pacing is unchanged.)
 - **Power-ups**:
   - **Ghost** (white concentric circle) — stacks; each charge phases through the next wall.
   - **Bullet time** (green dot) — only spawns from the displayed level `BULLET_MIN_LEVEL` (5) onward, since the early game is already slow. Slows scroll to `BULLET_SPEED_MULT` (0.5×) for `BULLET_WALL_COUNT` (2) wall passes, then ramps back to full speed over `BULLET_TRANSITION` (400ms). The HUD timer shows the *remaining wall count*, not seconds. (`ObstaclePool.level` is fed the live score-based level by `GameScene`.)

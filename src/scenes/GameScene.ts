@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import {
   W, H, HALF, DOT_R, DOT_Y, WALL_H,
   ACCEL, FRICTION, MAX_VEL, TRAIL_LEN,
-  SPEED_INITIAL, SPEED_GROWTH, MAX_COMBO_MULTI, ADVANCED_SPEED_MULT,
+  SPEED_INITIAL, SPEED_GROWTH, MAX_COMBO_MULTI, BASE_PASS_SCORE, LEVEL_POINTS, ADVANCED_SPEED_MULT,
   C_BG, C_LEFT, C_RIGHT, HI_SCORE_KEY, HI_LEVEL_KEY,
   THEMES, FLICKER_START_SCORE, FLICKER_INTERVAL_MIN,
   FLICKER_INTERVAL_MAX, FLICKER_DURATION,
@@ -236,7 +236,7 @@ export class GameScene extends Phaser.Scene {
     const scroll = this.speed * dt;
     this.dist += scroll;
     /* keep the pool's level gate in sync with the displayed (score-based) level */
-    this.pool.level = Math.floor(this.score / 100) + 1;
+    this.pool.level = Math.floor(this.score / LEVEL_POINTS) + 1;
     this.pool.scroll(scroll, this.dist);
 
     /* -- collision & scoring -- */
@@ -308,7 +308,8 @@ export class GameScene extends Phaser.Scene {
         o.passed = true;
         this.combo++;
         this.maxCombo = Math.max(this.maxCombo, this.combo);
-        this.score   += Math.min(this.combo, MAX_COMBO_MULTI);
+        /* score the base value multiplied by the live combo multiplier */
+        this.score   += BASE_PASS_SCORE * Math.min(this.combo, MAX_COMBO_MULTI);
         /* pitch rises with the combo for a satisfying streak feel */
         sfx.play('pass', 1 + Math.min(this.combo, MAX_COMBO_MULTI) * 0.035);
         haptics.pass();
@@ -331,7 +332,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     /* -- theme transitions every 100 points -- */
-    const themeIndex = Math.floor(this.score / 100);
+    const themeIndex = Math.floor(this.score / LEVEL_POINTS);
     if (themeIndex > this.currentTheme) {
       this.currentTheme = themeIndex;
       this.gfx.setTheme(themeIndex);
@@ -354,7 +355,7 @@ export class GameScene extends Phaser.Scene {
         this.flickerTimer      = 0;
         this.nextFlickerAt     = this._randomFlickerDelay();
         this.gfx.flickering    = true;
-        if (this.score > 400) this.shakeAmt = Math.max(this.shakeAmt, 2);
+        if (this.score > 4 * LEVEL_POINTS) this.shakeAmt = Math.max(this.shakeAmt, 2);
       }
     }
 

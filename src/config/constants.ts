@@ -25,6 +25,12 @@ export const OFFSET_GROWTH = 0.15;      // applied to sqrt(dist)
 
 /* Combo */
 export const MAX_COMBO_MULTI = 10;
+/* Each gate scores BASE_PASS_SCORE × current combo multiplier (so ×2 is worth
+   double a ×1 gate, ×3 triple, etc.). */
+export const BASE_PASS_SCORE = 10;
+/* Points per displayed level / theme cycle. Kept at 100× the base so the
+   number of gates per level is unchanged from the original pacing. */
+export const LEVEL_POINTS = 1000;
 
 /* Portal gate markers */
 export const GATE_W = 3;
@@ -63,7 +69,7 @@ export const THEMES: readonly Theme[] = [
 ] as const;
 
 /* Flicker / distortion */
-export const FLICKER_START_SCORE = 150;
+export const FLICKER_START_SCORE = 1500;
 export const FLICKER_INTERVAL_MIN = 3000;
 export const FLICKER_INTERVAL_MAX = 8000;
 export const FLICKER_DURATION = 180;
