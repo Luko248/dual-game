@@ -157,6 +157,39 @@ canvas {
 
 
 /* ═══════════════════════════════════════════
+   FLOATING SCORE POPUPS
+   Rise from the dots on each gate pass, brighter
+   as the combo multiplier climbs.
+═══════════════════════════════════════════ */
+
+#score-popups {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 640px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.score-popup {
+  position: absolute;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  white-space: nowrap;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+  will-change: transform, opacity;
+  animation: score-pop 0.75s ease-out forwards;
+}
+
+@keyframes score-pop {
+  0%   { opacity: 0; transform: translate(-50%, -40%) scale(0.7); }
+  18%  { opacity: 1; transform: translate(-50%, -65%) scale(1.06); }
+  100% { opacity: 0; transform: translate(-50%, -165%) scale(1); }
+}
+
+
+/* ═══════════════════════════════════════════
    MENU SCREEN
    Flex-column layout inside the 400×640 menu.
    Three bands (header / card / footer) are spread

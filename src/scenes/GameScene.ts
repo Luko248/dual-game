@@ -309,9 +309,13 @@ export class GameScene extends Phaser.Scene {
         this.combo++;
         this.maxCombo = Math.max(this.maxCombo, this.combo);
         /* score the base value multiplied by the live combo multiplier */
-        this.score   += BASE_PASS_SCORE * Math.min(this.combo, MAX_COMBO_MULTI);
+        const mult = Math.min(this.combo, MAX_COMBO_MULTI);
+        const pts  = BASE_PASS_SCORE * mult;
+        this.score += pts;
+        /* floating "+N" rising between the two dots, brighter as combo climbs */
+        uiManager.popupScore(pts, (this.leftDot.x + this.rightDot.x) / 2, DOT_Y - 16, mult);
         /* pitch rises with the combo for a satisfying streak feel */
-        sfx.play('pass', 1 + Math.min(this.combo, MAX_COMBO_MULTI) * 0.035);
+        sfx.play('pass', 1 + mult * 0.035);
         haptics.pass();
 
         if (this.score > this.hiScore && !this.newBest) {

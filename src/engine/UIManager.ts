@@ -22,6 +22,9 @@ class UIManager {
   private introHint!: HTMLElement;
   private introLabel!: HTMLElement;
 
+  /* floating score popups */
+  private scorePopups!: HTMLElement;
+
   /* power-up indicators */
   private hudGhost!: HTMLElement;
   private hudGhostCount!: HTMLElement;
@@ -85,6 +88,7 @@ class UIManager {
     this.hudBestBanner = document.getElementById('hud-best-banner')!;
     this.introHint     = document.getElementById('intro-hint')!;
     this.introLabel    = document.getElementById('intro-label')!;
+    this.scorePopups   = document.getElementById('score-popups')!;
     this.hudGhost      = document.getElementById('hud-ghost')!;
     this.hudGhostCount = document.getElementById('hud-ghost-count')!;
     this.hudBullet     = document.getElementById('hud-bullet')!;
@@ -188,9 +192,30 @@ class UIManager {
       ? 'EACH THUMB → ITS OWN DOT'
       : 'SLIDE THUMBS ← →';
     this.introHint.classList.remove('ui-hidden', 'intro-fading');
+    /* clear any leftover popups from a previous run */
+    this.scorePopups.textContent = '';
     /* reset change-detection caches so the first per-frame update writes */
     this.lastScore = -1;
     this.lastCombo = -1;
+  }
+
+  /**
+   * Spawn a floating "+N" at (x, y) in the 400×640 virtual space. It rises and
+   * fades on its own, then removes itself. Colour brightens with the combo.
+   */
+  popupScore(points: number, x: number, y: number, mult: number): void {
+    const el = document.createElement('div');
+    el.className = 'score-popup';
+    el.textContent = '+' + points;
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+    el.style.fontSize = (18 + Math.min(mult, 10)) + 'px';
+    el.style.color =
+      mult >= 8 ? '#ffcc00' :
+      mult >= 4 ? '#ffe08a' :
+      mult >= 2 ? '#fff4c2' : '#ffffff';
+    el.addEventListener('animationend', () => el.remove());
+    this.scorePopups.appendChild(el);
   }
 
   stopIntroDemo(): void {

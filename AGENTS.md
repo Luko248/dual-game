@@ -26,7 +26,7 @@ No test runner or linter is configured. TypeScript checking uses `strict: true` 
   - `ObstaclePool` — Object-pooled obstacle spawning with procedural difficulty scaling (gap width, spacing, speed all tighten over distance). Spawns ghost and bullet-time pickups in the open space below selected walls.
   - `Renderer` — Layered Phaser Graphics drawing (bg → walls → trails → dots → fx). Handles themed backgrounds, portal gate effects, flicker/glitch, glow trails, death particles.
   - `SoundEngine` — Web Audio synth singleton (procedural sounds, no audio files). Global `sfx` instance, fails silently.
-  - `UIManager` — Owns the HTML overlay (`#ui-inner`, fixed 400×640 virtual canvas scaled via CSS `svi`/`svb`). Switches between menu / HUD / leaderboard / game-over views, drives the intro demo class on `#game-hud`, and renders the bullet-walls and ghost-charges indicators.
+  - `UIManager` — Owns the HTML overlay (`#ui-inner`, fixed 400×640 virtual canvas scaled via CSS `svi`/`svb`). Switches between menu / HUD / leaderboard / game-over views, drives the intro demo class on `#game-hud`, renders the bullet-walls and ghost-charges indicators, and spawns floating "+N" score popups (`#score-popups`) on each gate pass.
   - `Leaderboard` — Provider-based score board (no backend of ours, no paid API). Defaults to a **local** localStorage board; switches to a **global PlayFab** board when `VITE_PLAYFAB_TITLE_ID` is set (client REST only — the Title ID is public, no secret key). One row per device UID; only the max score is kept (locally via `max()`, on PlayFab via statistic aggregation = Maximum). See `.env.example` for PlayFab setup.
 - **`src/scenes/`** — Phaser scenes:
   - `MenuScene` — Title screen, demo dots, high score / level display.
