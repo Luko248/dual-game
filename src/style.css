@@ -73,13 +73,27 @@ canvas {
 /* ── Container layers
    Must match #ui-inner size so that children's
    left: 50% resolves to 50% of 400px = 200px  ── */
-#game-hud,
+#game-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 640px;
+}
+
+/* Game over: centered flex column over a dimming scrim so the
+   stats stay readable above the still-rendering game scene. */
 #gameover-ui {
   position: absolute;
   top: 0;
   left: 0;
   width: 400px;
   height: 640px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 3, 12, 0.62);
+  animation: ui-fadein 0.35s ease-out;
 }
 
 /* Menu uses a centered flex column so spacing scales gracefully. */
@@ -101,9 +115,7 @@ canvas {
 #hud-best-banner, #hud-score, #hud-combo,
 #hud-ghost, #hud-bullet,
 #joystick-left, #joystick-right,
-#ghost-alert, #bullet-alert,
-#go-title, #go-score, #go-best,
-#go-combo, #go-level, #go-retry {
+#ghost-alert, #bullet-alert {
   position: absolute;
 }
 
@@ -217,30 +229,42 @@ canvas {
 
 #menu-tagline {
   font-size: 17px;
-  color: #b6b6da;
+  color: #cdcde6;
   letter-spacing: 0.1em;
 }
 
-/* ── How-to card — translucent panel for readability ── */
-#menu-card {
+/* ── Section cards — each section sits in its own clearly
+   delimited box so the menu scans as separate blocks ── */
+#menu-cards {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.menu-card {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 11px;
-  padding: 18px 18px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.25) inset;
+  gap: 12px;
+  padding: 16px 18px 18px;
+  border-radius: 16px;
+  background: rgba(20, 22, 44, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
-#menu-howto-header {
+.menu-card-header {
   font-size: 13px;
   font-weight: bold;
-  color: #8f8fc4;
+  color: #8fe3f2;
   letter-spacing: 0.28em;
   margin-bottom: 2px;
+  padding-bottom: 8px;
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Two-column gesture → result rows */
@@ -253,11 +277,11 @@ canvas {
 }
 
 .menu-row-label {
-  color: #c8c8e6;
+  color: #e2e2f4;
 }
 
 .menu-row-arrow {
-  color: #5d5d86;
+  color: #9a9ac6;
   font-size: 15px;
 }
 
@@ -269,31 +293,9 @@ canvas {
 
 #menu-survive {
   font-size: 14px;
-  color: #8a8ab0;
+  color: #c2c2dc;
   letter-spacing: 0.06em;
   margin-top: 2px;
-}
-
-.menu-divider {
-  width: 70%;
-  height: 1px;
-  margin: 4px 0;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 255, 255, 0.14),
-    transparent
-  );
-}
-
-/* Power-ups section header */
-#menu-powerups-header {
-  font-size: 13px;
-  font-weight: bold;
-  color: #8f8fc4;
-  letter-spacing: 0.28em;
-  margin-top: 2px;
-  margin-bottom: 2px;
 }
 
 /* Power-up rows: icon + name + effect */
@@ -313,11 +315,11 @@ canvas {
 }
 
 .menu-power-ghost { color: #ffffff; }
-.menu-power-bullet { color: #44ff66; }
+.menu-power-bullet { color: #6bff88; }
 
 .menu-power-text {
   font-size: 13px;
-  color: #a8a8cc;
+  color: #c8c8e2;
   letter-spacing: 0.02em;
 }
 
@@ -378,13 +380,13 @@ canvas {
 
 #menu-best {
   font-size: 22px;
-  color: #d2d2ec;
+  color: #ffffff;
   letter-spacing: 0.08em;
 }
 
 #menu-lvl {
   font-size: 14px;
-  color: #8a8ab0;
+  color: #b4b4d2;
   letter-spacing: 0.12em;
 }
 
@@ -704,14 +706,25 @@ canvas {
 
 /* ═══════════════════════════════════════════
    GAME OVER SCREEN
-   H/2 = 320
+   Card panel centered by #gameover-ui (flex),
+   floating above the dimming scrim.
 ═══════════════════════════════════════════ */
 
+#go-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 320px;
+  padding: 28px 24px;
+  border-radius: 20px;
+  background: rgba(12, 13, 28, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
+}
+
 #go-title {
-  top: 268px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 38px;
+  font-size: 36px;
   font-weight: bold;
   color: #ffffff;
   letter-spacing: 0.1em;
@@ -720,51 +733,49 @@ canvas {
 }
 
 #go-score {
-  top: 328px;
-  left: 50%;
-  transform: translateX(-50%);
   font-size: 28px;
-  color: #888899;
+  font-weight: bold;
+  color: #ffffff;
   letter-spacing: 0.05em;
   opacity: 0;
 }
 
+#go-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 0 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 #go-best {
-  top: 364px;
-  left: 50%;
-  transform: translateX(-50%);
   font-size: 16px;
-  color: #555577;
+  color: #c6c6de;
   letter-spacing: 0.08em;
   opacity: 0;
 }
 
 #go-combo {
-  top: 390px;
-  left: 50%;
-  transform: translateX(-50%);
   font-size: 14px;
-  color: #ffaa00;
+  color: #ffc14d;
   letter-spacing: 0.06em;
   opacity: 0;
 }
 
 #go-level {
-  top: 412px;
-  left: 50%;
-  transform: translateX(-50%);
   font-size: 13px;
-  color: #555577;
+  color: #b0b0cc;
   letter-spacing: 0.05em;
   opacity: 0;
 }
 
 #go-retry {
-  top: 456px;
-  left: 50%;
-  transform: translateX(-50%);
   font-size: 16px;
-  color: #666677;
+  font-weight: bold;
+  color: #e8e8f2;
   letter-spacing: 0.12em;
   animation: ui-prompt-breathe 2.8s ease-in-out infinite;
 }
@@ -878,7 +889,7 @@ canvas {
 
 #lb-scope {
   font-size: 12px;
-  color: #7a7aa6;
+  color: #a6a6ca;
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
@@ -921,7 +932,7 @@ canvas {
 }
 
 #lb-name-input::placeholder {
-  color: #5d5d86;
+  color: #9090b8;
   letter-spacing: 0.04em;
 }
 
@@ -957,7 +968,7 @@ canvas {
 .lb-rank {
   font-size: 14px;
   font-weight: bold;
-  color: #7a7aa6;
+  color: #9c9cc4;
   width: 30px;
   flex-shrink: 0;
 }
@@ -986,7 +997,7 @@ canvas {
 .lb-empty {
   margin-top: 30px;
   font-size: 14px;
-  color: #6a6a90;
+  color: #a0a0c4;
   letter-spacing: 0.06em;
   white-space: normal;
   text-align: center;
@@ -994,7 +1005,7 @@ canvas {
 
 #lb-status {
   font-size: 12px;
-  color: #6a6a90;
+  color: #9a9ac0;
   letter-spacing: 0.08em;
   min-height: 14px;
   white-space: normal;
