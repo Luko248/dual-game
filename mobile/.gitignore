@@ -1,0 +1,15 @@
+# generated native folders — recreated by `expo prebuild --clean`
+/ios
+/android
+
+# generated game bundle — recreated by `bun run build:mobile` (repo root)
+/assets/game
+
+node_modules/
+.expo/
+dist/
+
+# signing material — never commit
+*.p8
+*.p12
+*.mobileprovision

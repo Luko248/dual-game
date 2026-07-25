@@ -8,6 +8,7 @@ This file provides guidance to AI Agents when working with code in this reposito
 bun install          # Install dependencies
 bun run dev          # Start Vite dev server on port 3000 (auto-opens browser)
 bun run build        # Production build to dist/
+bun run build:mobile # Single-file game bundle for the native shell → mobile/assets/game/index.html
 bun run preview      # Preview production build locally
 ```
 
@@ -57,3 +58,10 @@ Two fixed rings sit at the bottom of the play area inside `#game-hud`:
 ### PWA
 
 Service worker (`public/sw.js`) uses cache-first for assets, network-first for navigation. Cache key: `dual-v1`. Manifest targets fullscreen portrait mode.
+
+### Mobile (iOS App Store)
+
+- **`mobile/`** — Expo shell app (portrait-locked WKWebView) that loads the game from a bundled single-file HTML asset, fully offline. `vite.mobile.config.ts` + `bun run build:mobile` produce `mobile/assets/game/index.html` (gitignored — regenerate before every native build; no PWA/service worker in this build).
+- Release is Xcode-native (no EAS): `expo prebuild --platform ios --clean` → `pod install` → `xcodebuild archive` → `-exportArchive` upload with an App Store Connect API key. Full runbook: `docs/IOS_RELEASE.md`.
+- Versioning law: `ios.buildNumber` (string) and `android.versionCode` (number) in `mobile/app.config.ts` are always bumped together to the same value in one commit.
+- `mobile/ios/` and `mobile/android/` are generated and never committed.

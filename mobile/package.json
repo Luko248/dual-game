@@ -1,0 +1,27 @@
+{
+  "name": "dual-mobile",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "private": true,
+  "scripts": {
+    "game": "cd .. && bun run build:mobile",
+    "start": "expo start",
+    "ios": "expo run:ios",
+    "android": "expo run:android",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "expo": "56.0.12",
+    "expo-asset": "56.0.17",
+    "expo-splash-screen": "56.0.10",
+    "expo-status-bar": "56.0.4",
+    "expo-system-ui": "56.0.5",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-webview": "^13.13.5"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "typescript": "^5.9.0"
+  }
+}
