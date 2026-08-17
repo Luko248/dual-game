@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2732 2732" width="2732" height="2732">
+  <!-- Native launch screen — same dot mark as the icon, centered full-bleed
+       on the exact game background color so there's no flash/mismatch
+       when the WebView takes over. -->
+  <rect width="2732" height="2732" fill="#05050a"/>
+  <circle cx="1067" cy="1366" r="347" fill="#00e8ff" opacity="0.14"/>
+  <circle cx="1067" cy="1366" r="224" fill="#00e8ff" opacity="0.30"/>
+  <circle cx="1067" cy="1366" r="139" fill="#00e8ff"/>
+  <circle cx="1030" cy="1329" r="53"  fill="#ffffff" opacity="0.35"/>
+  <circle cx="1665" cy="1366" r="347" fill="#ff0099" opacity="0.14"/>
+  <circle cx="1665" cy="1366" r="224" fill="#ff0099" opacity="0.30"/>
+  <circle cx="1665" cy="1366" r="139" fill="#ff0099"/>
+  <circle cx="1628" cy="1329" r="53"  fill="#ffffff" opacity="0.35"/>
+  <line x1="1366" y1="683" x2="1366" y2="2049" stroke="#1a1a2e" stroke-width="11" opacity="0.4"/>
+</svg>

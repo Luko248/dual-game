@@ -4,6 +4,10 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   root: '.',
   publicDir: 'public',
+  /* Relative asset paths so the same `dist/` works under both
+     a normal HTTPS host AND Capacitor's capacitor://localhost / file://
+     contexts on iOS and Android. */
+  base: './',
   server: {
     port: 3000,
     open: true
