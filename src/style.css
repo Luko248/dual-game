@@ -1,3 +1,44 @@
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+   From the "Mobile app intro section redesign"
+   Claude Design project. The palette is oklch
+   throughout, matching the game's own dot colors
+   (C_LEFT #00e8ff cyan / C_RIGHT #ff0099 magenta).
+
+   Text tiers are tuned for WCAG AA (>=4.5:1 body,
+   >=3:1 large) against --surface-screen — the
+   mockup's dimmest greys sat under 4.5:1, so the
+   muted/faint tiers here are lifted from it.
+═══════════════════════════════════════════ */
+:root {
+  /* accents */
+  --accent:        oklch(0.8 0.15 200);
+  --accent-bright: oklch(0.88 0.15 200);
+  --accent-deep:   oklch(0.68 0.19 250);
+  --magenta:       oklch(0.68 0.25 350);
+  --green:         oklch(0.78 0.2 145);
+  --danger:        oklch(0.75 0.2 355);
+
+  /* surfaces */
+  --surface-screen: radial-gradient(ellipse at 50% -5%,
+                      oklch(0.2 0.035 260) 0%,
+                      oklch(0.09 0.01 260) 45%,
+                      oklch(0.05 0.005 260) 100%);
+  --surface-card:   oklch(0.16 0.02 260 / 0.6);
+  --surface-sheet:  oklch(0.13 0.015 260);
+  --surface-raised: oklch(0.2 0.02 260);
+
+  /* borders */
+  --line:        oklch(1 0 0 / 0.12);
+  --line-soft:   oklch(1 0 0 / 0.08);
+
+  /* text — AA-checked against the screen background */
+  --text:        oklch(0.95 0.01 260);
+  --text-dim:    oklch(0.82 0.01 260);
+  --text-muted:  oklch(0.68 0.012 260);
+  --text-faint:  oklch(0.62 0.012 260);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -107,7 +148,53 @@ canvas {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 40px 30px 30px;
+  padding: 22px 24px 26px;
+  background: var(--surface-screen);
+}
+
+/* Settings: full-screen flex column, BACK pinned to the bottom
+   by the .flex-spacer before it. */
+#settings-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 30px 24px 26px;
+  background: var(--surface-screen);
+  pointer-events: auto;
+}
+
+/* Leaderboard: same full-screen column shell as settings. */
+#leaderboard-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px 24px 26px;
+  background: var(--surface-screen);
+  pointer-events: auto;
+}
+
+/* How-to: bottom sheet layered over the menu, which stays rendered
+   behind the scrim (matching the mockup's dimmed wordmark). */
+#howto-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 640px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: auto;
 }
 
 /* ── HUD / game-over text nodes use absolute positioning.
@@ -202,212 +289,557 @@ canvas {
 
 
 /* ═══════════════════════════════════════════
-   MENU SCREEN
-   Flex-column layout inside the 400×640 menu.
-   Three bands (header / card / footer) are spread
-   apart with justify-content: space-between so the
-   screen breathes on every device.
+   MENU SCREEN (01 · HOME)
+   Three bands via space-between on #menu-ui:
+   top bar / centre stack / control footer.
 ═══════════════════════════════════════════ */
 
-/* ── Header band ── */
-#menu-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  /* extra breathing room between the title and the how-to card below */
-  margin-bottom: 12px;
-}
-
-#menu-title {
-  font-size: 74px;
-  font-weight: bold;
-  color: #ffffff;
-  letter-spacing: 0.08em;
-  text-shadow: 0 0 34px rgba(255,255,255,0.3);
-}
-
-#menu-tagline {
-  font-size: 17px;
-  color: #cdcde6;
-  letter-spacing: 0.1em;
-}
-
-/* ── Section cards — each section sits in its own clearly
-   delimited box so the menu scans as separate blocks ── */
-#menu-cards {
+/* ── Top bar: sound · scores · settings ── */
+#menu-topbar {
   width: 100%;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+#menu-topbar-right {
+  display: flex;
   gap: 14px;
 }
 
-.menu-card {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 18px 18px;
-  border-radius: 16px;
-  background: rgba(20, 22, 44, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
-}
-
-.menu-card-header {
-  font-size: 13px;
-  font-weight: bold;
-  color: #8fe3f2;
-  letter-spacing: 0.28em;
-  margin-bottom: 2px;
-  padding-bottom: 8px;
-  width: 100%;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Two-column gesture → result rows */
-.menu-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  font-size: 16px;
-}
-
-.menu-row-label {
-  color: #e2e2f4;
-}
-
-.menu-row-arrow {
-  color: #9a9ac6;
-  font-size: 15px;
-}
-
-.menu-row-value {
-  color: #ffffff;
-  font-weight: bold;
-  letter-spacing: 0.04em;
-}
-
-#menu-survive {
-  font-size: 14px;
-  color: #c2c2dc;
-  letter-spacing: 0.06em;
-  margin-top: 2px;
-}
-
-/* Power-up rows: icon + name + effect */
-.menu-power-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 290px;
-}
-
-.menu-power-name {
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 0.08em;
-  min-width: 52px;
-}
-
-.menu-power-ghost { color: #ffffff; }
-.menu-power-bullet { color: #6bff88; }
-
-.menu-power-text {
-  font-size: 13px;
-  color: #c8c8e2;
-  letter-spacing: 0.02em;
-}
-
-/* CSS concentric circles mimicking the Phaser ghost icon */
-#menu-ghost-icon {
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
-  position: relative;
-}
-#menu-ghost-icon::before {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.8);
-  box-shadow:
-    0 0 0 3.5px rgba(255,255,255,0.4),
-    0 0 0 7.5px rgba(255,255,255,0.15);
-}
-
-#menu-bullet-icon {
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
-  position: relative;
-}
-#menu-bullet-icon::before {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #44ff66;
-  box-shadow: 0 0 7px rgba(68,255,102,0.7), 0 0 14px rgba(68,255,102,0.35);
-}
-
-/* ── Footer band — stats + prompt ── */
-#menu-footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 11px;
-}
-
-#menu-stats {
+.icon-btn-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  min-height: 24px;
 }
 
+.icon-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface-card);
+  cursor: pointer;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.icon-btn:hover,
+.icon-btn:active {
+  border-color: oklch(1 0 0 / 0.3);
+  background: oklch(0.22 0.02 260 / 0.75);
+}
+
+/* 9px rather than the mockup's 8px — 8px monospace caps are below a
+   comfortable floor once the canvas scales down on small phones. */
+.icon-btn-label {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+}
+
+/* Speaker glyph: cone (clipped rect) + one wave arc */
+.ico-speaker {
+  width: 11px;
+  height: 12px;
+  background: var(--text-dim);
+  clip-path: polygon(0 30%, 42% 30%, 100% 0, 100% 100%, 42% 70%, 0 70%);
+}
+.ico-speaker-wave {
+  width: 5px;
+  height: 12px;
+  border: 1.5px solid var(--text-dim);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+}
+/* muted: drop the wave, dim the cone */
+#menu-mute-btn.is-muted .ico-speaker { background: var(--text-faint); }
+#menu-mute-btn.is-muted .ico-speaker-wave { opacity: 0.25; }
+
+/* Scores glyph: three bars, middle one accented */
+#menu-leaderboard-btn {
+  align-items: flex-end;
+  padding-bottom: 14px;
+}
+.ico-bar {
+  width: 4px;
+  height: 9px;
+  border-radius: 1px 1px 0 0;
+  background: var(--text-muted);
+}
+.ico-bar:last-child { height: 12px; }
+.ico-bar-accent {
+  height: 15px;
+  background: var(--accent);
+}
+
+/* Settings glyph: two slider rails with offset knobs */
+#menu-settings-btn { flex-direction: column; gap: 5px; }
+.ico-slider {
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text-muted);
+  position: relative;
+}
+.ico-knob {
+  position: absolute;
+  top: -2.5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.ico-knob-a { left: 4px;  background: var(--accent); }
+.ico-knob-b { right: 3px; background: var(--text-dim); }
+
+/* ── Centre band: wordmark + primary actions ── */
+#menu-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 38px;
+}
+
+#menu-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+@keyframes menu-title-glow {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.86; }
+}
+
+#menu-title {
+  font-size: 76px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 9px;
+  /* letter-spacing adds a trailing gap — pull back to stay optically centred */
+  text-indent: 9px;
+  color: #fff;
+  text-shadow: 0 0 22px oklch(0.85 0.15 200 / 0.85),
+               0 0 56px oklch(0.85 0.15 200 / 0.45);
+  animation: menu-title-glow 3.5s ease-in-out infinite;
+}
+
+#menu-tagline {
+  font-size: 13px;
+  letter-spacing: 4.5px;
+  text-indent: 4.5px;
+  color: var(--text-muted);
+}
+
+#menu-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* BEST / LVL pill — hidden entirely until there's a score to show */
+#menu-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 9px 20px;
+  border-radius: 999px;
+  background: oklch(1 0 0 / 0.04);
+  border: 1px solid var(--line-soft);
+  min-height: 36px;
+}
+#menu-stats.is-empty { visibility: hidden; }
+
 #menu-best {
-  font-size: 22px;
-  color: #ffffff;
-  letter-spacing: 0.08em;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
 }
 
 #menu-lvl {
-  font-size: 14px;
-  color: #b4b4d2;
-  letter-spacing: 0.12em;
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
 }
 
-#menu-buttons {
+#menu-play-btn {
+  padding: 17px 58px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: #04101a;
+  font-family: inherit;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 0 0 1px oklch(0.85 0.15 200 / 0.4),
+              0 8px 26px oklch(0.7 0.18 220 / 0.4),
+              0 0 34px oklch(0.8 0.15 200 / 0.3);
+  transition: filter 0.15s, transform 0.1s;
+}
+#menu-play-btn:hover  { filter: brightness(1.08); }
+#menu-play-btn:active { transform: translateY(1px); }
+
+#menu-howto-btn {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--accent-bright);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.15s, border-color 0.15s;
+}
+#menu-howto-btn:hover,
+#menu-howto-btn:active {
+  background: oklch(0.8 0.15 200 / 0.08);
+  border-color: oklch(0.8 0.15 200 / 0.45);
+}
+
+/* ── Footer: which control setup is active ── */
+#menu-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+#menu-footer-label { color: var(--text-faint); }
+#menu-footer-mode  { color: var(--accent); font-weight: 700; }
+
+
+/* ═══════════════════════════════════════════
+   HOW TO PLAY SHEET (02)
+   Bottom sheet over a scrim; the menu stays
+   rendered behind it.
+═══════════════════════════════════════════ */
+
+#howto-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+@keyframes sheet-rise {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+#howto-sheet {
+  position: relative;
+  background: var(--surface-sheet);
+  border-radius: 28px 28px 0 0;
+  border-top: 1px solid var(--line);
+  padding: 14px 24px 26px;
+  box-shadow: 0 -12px 44px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: sheet-rise 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+#howto-grabber {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: oklch(1 0 0 / 0.2);
+  margin: 0 auto;
+}
+
+.sheet-section {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.sheet-header {
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  color: var(--accent-bright);
+  font-weight: 700;
+}
+
+.sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* fixed-width glyph gutter keeps every label left-aligned */
+.sheet-glyph {
+  width: 52px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.sheet-glyph-tight { gap: 3px; }
+
+.sheet-text {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.sheet-text b { color: #fff; }
+.sheet-text b.is-bullet { color: var(--green); }
+
+.sheet-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.dot-cyan    { background: var(--accent);  box-shadow: 0 0 8px var(--accent); }
+.dot-magenta { background: var(--magenta); box-shadow: 0 0 8px var(--magenta); }
+
+.glyph-bar {
+  width: 22px;
+  height: 2px;
+  background: oklch(0.5 0.01 260);
+}
+
+#howto-survive {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  padding-left: 66px;
+}
+
+.sheet-divider {
+  height: 1px;
+  background: var(--line-soft);
+}
+
+/* Power-up icons — concentric ghost ring / solid bullet dot */
+#howto-ghost-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px dashed oklch(0.8 0.01 260 / 0.7);
+  background: oklch(1 0 0 / 0.06);
+}
+#howto-bullet-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 14px oklch(0.78 0.2 145 / 0.8);
+}
+
+
+/* ═══════════════════════════════════════════
+   SETTINGS SCREEN (03)
+═══════════════════════════════════════════ */
+
+#settings-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  color: #fff;
+  text-shadow: 0 0 18px oklch(0.85 0.15 200 / 0.5);
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-  flex-wrap: wrap;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  color: var(--accent-bright);
+  font-weight: 700;
+}
+
+.settings-info {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid var(--text-muted);
+  color: var(--text-dim);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-#menu-mute-btn.is-muted {
-  color: #8a8ab0;
-  border-color: rgba(255, 255, 255, 0.1);
+/* ── Control mode cards (radio group) ── */
+.ctrl-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 15px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line-soft);
+  background: oklch(0.16 0.02 260 / 0.5);
+  font-family: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: border-color 0.15s, background 0.15s;
 }
 
-#menu-prompt {
-  font-size: 17px;
-  color: #e0e0e0;
-  letter-spacing: 0.12em;
-  animation: ui-prompt-breathe 2.8s ease-in-out infinite;
+.ctrl-card.is-active {
+  border-color: oklch(0.8 0.15 200 / 0.5);
+  background: oklch(0.8 0.15 200 / 0.07);
 }
+
+.ctrl-radio {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid oklch(0.5 0.01 260);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+}
+.ctrl-card.is-active .ctrl-radio { border-color: var(--accent); }
+
+/* inner dot only exists on the selected card */
+.ctrl-card.is-active .ctrl-radio::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.ctrl-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ctrl-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 1.5px;
+}
+.ctrl-card.is-active .ctrl-name { color: #fff; }
+
+.ctrl-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.ctrl-chip {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--danger);
+  border: 1px solid oklch(0.6 0.22 355 / 0.5);
+  border-radius: 999px;
+  padding: 4px 9px;
+  flex: none;
+}
+
+/* Tooltip with a pointer notch aimed at the card above.
+   `white-space: normal` overrides the global nowrap from `#ui-inner *`
+   (set for single-line HUD labels) — this is a wrapping paragraph. */
+#ctrl-tip {
+  position: relative;
+  margin-top: 2px;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px 13px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  white-space: normal;
+}
+#ctrl-tip::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 26px;
+  width: 9px;
+  height: 9px;
+  background: var(--surface-raised);
+  border-left: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+
+/* ── Audio toggles ── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: oklch(0.16 0.02 260 / 0.5);
+  padding: 13px 16px;
+  font-family: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.toggle-label {
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+}
+
+.toggle-track {
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  padding: 3px;
+  background: oklch(0.35 0.01 260);
+  display: flex;
+  justify-content: flex-start;
+  transition: background 0.18s;
+}
+.toggle-row.is-on .toggle-track {
+  background: var(--accent);
+  justify-content: flex-end;
+}
+
+.toggle-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+/* pushes trailing BACK buttons to the bottom of a flex-column screen */
+.flex-spacer { flex: 1; }
 
 
 /* ═══════════════════════════════════════════
@@ -705,309 +1137,253 @@ canvas {
 
 
 /* ═══════════════════════════════════════════
-   GAME OVER SCREEN
-   Card panel centered by #gameover-ui (flex),
-   floating above the dimming scrim.
-═══════════════════════════════════════════ */
-
-#go-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  width: 320px;
-  padding: 28px 24px;
-  border-radius: 20px;
-  background: rgba(12, 13, 28, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
-}
-
-#go-title {
-  font-size: 36px;
-  font-weight: bold;
-  color: #ffffff;
-  letter-spacing: 0.1em;
-  text-shadow: 0 0 24px rgba(255,255,255,0.25);
-  opacity: 0;
-}
-
-#go-score {
-  font-size: 28px;
-  font-weight: bold;
-  color: #ffffff;
-  letter-spacing: 0.05em;
-  opacity: 0;
-}
-
-#go-stats {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 0 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-#go-best {
-  font-size: 16px;
-  color: #c6c6de;
-  letter-spacing: 0.08em;
-  opacity: 0;
-}
-
-#go-combo {
-  font-size: 14px;
-  color: #ffc14d;
-  letter-spacing: 0.06em;
-  opacity: 0;
-}
-
-#go-level {
-  font-size: 13px;
-  color: #b0b0cc;
-  letter-spacing: 0.05em;
-  opacity: 0;
-}
-
-#go-retry {
-  font-size: 16px;
-  font-weight: bold;
-  color: #e8e8f2;
-  letter-spacing: 0.12em;
-  animation: ui-prompt-breathe 2.8s ease-in-out infinite;
-}
-
-
-/* ═══════════════════════════════════════════
-   BUTTONS (menu / leaderboard)
+   SHARED BUTTONS
    Need pointer-events:auto since the overlay
    itself is pointer-events:none.
 ═══════════════════════════════════════════ */
 
-.menu-btn {
-  pointer-events: auto;
-  cursor: pointer;
+.btn-primary {
+  width: 100%;
+  padding: 15px 0;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: #04101a;
   font-family: inherit;
   font-size: 15px;
-  font-weight: bold;
-  letter-spacing: 0.18em;
-  color: #d8d8f0;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
-  padding: 11px 26px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: filter 0.15s, transform 0.1s;
+}
+.btn-primary:hover  { filter: brightness(1.08); }
+.btn-primary:active { transform: translateY(1px); }
+
+.btn-ghost {
+  width: 100%;
+  padding: 14px 0;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: oklch(0.16 0.01 260);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  pointer-events: auto;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-
-.menu-btn:hover,
-.menu-btn:active {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.4);
-  color: #ffffff;
-}
-
-/* Advanced mode — magenta "danger" accent to signal high difficulty */
-.menu-btn-advanced {
-  color: #ff66bb;
-  border-color: rgba(255, 0, 153, 0.5);
-  background: rgba(255, 0, 153, 0.07);
-  letter-spacing: 0.2em;
-  box-shadow: 0 0 18px rgba(255, 0, 153, 0.18);
-}
-
-.menu-btn-advanced:hover,
-.menu-btn-advanced:active {
-  color: #ffffff;
-  border-color: rgba(255, 0, 153, 0.9);
-  background: rgba(255, 0, 153, 0.22);
+.btn-ghost:hover,
+.btn-ghost:active {
+  background: oklch(0.22 0.01 260);
+  border-color: oklch(1 0 0 / 0.28);
+  color: #fff;
 }
 
 
 /* ═══════════════════════════════════════════
-   LEADERBOARD SCREEN
-   Full-bleed flex column. pointer-events:auto so
-   taps here never fall through to the canvas
-   (which would otherwise start the game).
+   GAME OVER SCREEN (05)
+   Card floating above the dimming scrim.
 ═══════════════════════════════════════════ */
 
-#leaderboard-ui {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 400px;
-  height: 640px;
-  pointer-events: auto;
+#go-panel {
+  width: 302px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 56px 26px 40px;
-  gap: 14px;
+  gap: 20px;
+  background: var(--surface-sheet);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 28px 24px 22px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
+
+#go-head { text-align: center; }
+
+#go-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #fff;
+  text-shadow: 0 0 20px oklch(0.85 0.15 200 / 0.5);
+  opacity: 0;
+}
+
+#go-score {
+  font-size: 44px;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 12px;
+  line-height: 1;
+  opacity: 0;
+}
+
+#go-score-label {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Stat rows — best/combo/level each render as "LABEL   value" */
+#go-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px 4px;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+#go-best, #go-combo, #go-level {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  opacity: 0;
+}
+
+#go-best  .go-k, #go-combo .go-k, #go-level .go-k { color: var(--text-muted); }
+#go-best  .go-v, #go-combo .go-v, #go-level .go-v { color: #fff; font-weight: 700; }
+#go-combo .go-v { color: oklch(0.85 0.16 85); }
+
+#go-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+/* ═══════════════════════════════════════════
+   LEADERBOARD SCREEN (06)
+   One shared board — both control setups rank
+   together (see Leaderboard.ts).
+═══════════════════════════════════════════ */
+
+#lb-head { text-align: center; }
 
 #lb-title {
-  font-size: 30px;
-  font-weight: bold;
-  color: #ffffff;
-  letter-spacing: 0.16em;
-  text-shadow: 0 0 24px rgba(255,255,255,0.3);
-}
-
-/* Mode tabs — Normal / Advanced boards */
-#lb-tabs {
-  display: flex;
-  gap: 8px;
-}
-
-.lb-tab {
-  pointer-events: auto;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 0.14em;
-  color: #8a8ab0;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  padding: 8px 20px;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.lb-tab.is-active {
-  color: #ffffff;
-  background: rgba(0, 232, 255, 0.12);
-  border-color: rgba(0, 232, 255, 0.45);
-}
-
-#lb-tab-advanced.is-active {
-  background: rgba(255, 0, 153, 0.14);
-  border-color: rgba(255, 0, 153, 0.5);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  color: #fff;
+  text-shadow: 0 0 18px oklch(0.85 0.15 200 / 0.5);
 }
 
 #lb-scope {
-  font-size: 12px;
-  color: #a6a6ca;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--text-muted);
+  margin-top: 8px;
 }
 
-/* Name editor */
+/* Name editor — the input needs its own pointer/select overrides
+   because the overlay ancestor disables both. */
 #lb-you {
   display: flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 300px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: space-between;
+  border: 1px solid oklch(0.8 0.15 200 / 0.35);
+  border-radius: 14px;
+  background: oklch(0.8 0.15 200 / 0.06);
+  padding: 13px 16px;
 }
 
 #lb-you-label {
   font-size: 12px;
-  font-weight: bold;
-  color: #8f8fc4;
-  letter-spacing: 0.18em;
-  flex-shrink: 0;
+  letter-spacing: 2px;
+  color: var(--accent-bright);
+  font-weight: 700;
 }
 
 #lb-name-input {
-  flex: 1;
-  min-width: 0;
-  font-family: inherit;
-  font-size: 16px;
-  color: #ffffff;
-  letter-spacing: 0.04em;
-  background: transparent;
-  border: none;
-  outline: none;
-  text-align: right;
   pointer-events: auto;
   user-select: text;
   -webkit-user-select: text;
-}
-
-#lb-name-input::placeholder {
-  color: #9090b8;
-  letter-spacing: 0.04em;
-}
-
-/* Scrollable rank list */
-#lb-list {
-  width: 100%;
-  max-width: 320px;
   flex: 1;
+  min-width: 0;
+  margin-left: 14px;
+  border: none;
+  background: transparent;
+  outline: none;
+  text-align: right;
+  font-family: inherit;
+  font-size: 13px;
+  color: #fff;
+}
+#lb-name-input::placeholder { color: var(--text-muted); }
+
+#lb-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  pointer-events: auto;
 }
-
-#lb-list::-webkit-scrollbar { width: 0; }
+#lb-list::-webkit-scrollbar { display: none; }
 
 .lb-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 9px 14px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.025);
+  gap: 14px;
+  border-radius: 14px;
+  background: oklch(1 0 0 / 0.03);
+  border: 1px solid oklch(1 0 0 / 0.06);
+  padding: 13px 16px;
 }
+
+/* top rank and the player's own row both get the accent treatment */
+.lb-row:first-child {
+  background: oklch(1 0 0 / 0.05);
+  border-color: var(--line-soft);
+}
+.lb-row:first-child .lb-rank { color: var(--accent); }
 
 .lb-row.lb-you {
-  background: rgba(0, 232, 255, 0.1);
-  border: 1px solid rgba(0, 232, 255, 0.3);
+  background: oklch(0.8 0.15 200 / 0.08);
+  border-color: oklch(0.8 0.15 200 / 0.3);
 }
+.lb-row.lb-you .lb-rank,
+.lb-row.lb-you .lb-name,
+.lb-row.lb-you .lb-score { color: #fff; }
 
 .lb-rank {
-  font-size: 14px;
-  font-weight: bold;
-  color: #9c9cc4;
-  width: 30px;
-  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 22px;
+  flex: none;
 }
-
-.lb-row.lb-you .lb-rank { color: #00e8ff; }
 
 .lb-name {
   flex: 1;
   min-width: 0;
-  font-size: 15px;
-  color: #d2d2ec;
-  letter-spacing: 0.03em;
+  font-size: 14px;
+  color: var(--text-dim);
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.lb-row.lb-you .lb-name { color: #ffffff; font-weight: bold; }
-
 .lb-score {
   font-size: 15px;
-  font-weight: bold;
-  color: #ffffff;
-  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--text-dim);
 }
 
 .lb-empty {
-  margin-top: 30px;
-  font-size: 14px;
-  color: #a0a0c4;
-  letter-spacing: 0.06em;
-  white-space: normal;
   text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 24px 0;
 }
 
 #lb-status {
-  font-size: 12px;
-  color: #9a9ac0;
-  letter-spacing: 0.08em;
-  min-height: 14px;
-  white-space: normal;
+  font-size: 10px;
+  line-height: 1.5;
   text-align: center;
+  color: var(--text-faint);
+  white-space: normal;   /* wraps — overrides the global nowrap */
 }

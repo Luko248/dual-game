@@ -153,7 +153,13 @@ export class InputManager {
   anyPressed(): boolean {
     return this.leftTouch  !== null ||
            this.rightTouch !== null ||
-           this.keyLeft.isDown || this.keyRight.isDown ||
+           this.anyKeyPressed();
+  }
+
+  /** Keyboard only — used by the game-over screen, where a pointer press
+   *  belongs to the TRY AGAIN / BACK TO HOME buttons rather than the game. */
+  anyKeyPressed(): boolean {
+    return this.keyLeft.isDown || this.keyRight.isDown ||
            this.keyA.isDown    || this.keyD.isDown     || this.keySpace.isDown;
   }
 }

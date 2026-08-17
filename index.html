@@ -26,69 +26,164 @@
   <div id="ui-overlay">
     <div id="ui-inner">
 
-      <!-- ═══ MENU SCREEN ═══ -->
+      <!-- ═══ MENU SCREEN (01 · HOME) ═══ -->
       <div id="menu-ui" class="ui-hidden">
-        <div id="menu-header">
-          <div id="menu-title">DUAL</div>
-          <div id="menu-tagline">Two dots. One mind.</div>
+
+        <!-- top bar: quick sound toggle · scores · settings -->
+        <div id="menu-topbar">
+          <div class="icon-btn-wrap">
+            <button id="menu-mute-btn" class="icon-btn" type="button" aria-label="Toggle sound">
+              <span class="ico-speaker"></span><span class="ico-speaker-wave"></span>
+            </button>
+            <div class="icon-btn-label">SOUND</div>
+          </div>
+          <div id="menu-topbar-right">
+            <div class="icon-btn-wrap">
+              <button id="menu-leaderboard-btn" class="icon-btn" type="button" aria-label="Leaderboard">
+                <span class="ico-bar"></span><span class="ico-bar ico-bar-accent"></span><span class="ico-bar"></span>
+              </button>
+              <div class="icon-btn-label">SCORES</div>
+            </div>
+            <div class="icon-btn-wrap">
+              <button id="menu-settings-btn" class="icon-btn" type="button" aria-label="Settings">
+                <span class="ico-slider"><i class="ico-knob ico-knob-a"></i></span>
+                <span class="ico-slider"><i class="ico-knob ico-knob-b"></i></span>
+              </button>
+              <div class="icon-btn-label">SETTINGS</div>
+            </div>
+          </div>
         </div>
 
-        <div id="menu-cards">
-          <div class="menu-card" id="menu-howto-card">
-            <div class="menu-card-header" id="menu-howto-header">HOW TO PLAY</div>
-
-            <div class="menu-row">
-              <span class="menu-row-label">thumbs apart</span>
-              <span class="menu-row-arrow">&#8594;</span>
-              <span class="menu-row-value">spread</span>
-            </div>
-            <div class="menu-row">
-              <span class="menu-row-label">thumbs together</span>
-              <span class="menu-row-arrow">&#8594;</span>
-              <span class="menu-row-value">gather</span>
-            </div>
-            <div id="menu-survive">Both dots must survive.</div>
+        <!-- centre: wordmark + primary actions -->
+        <div id="menu-center">
+          <div id="menu-header">
+            <div id="menu-title">DUAL</div>
+            <div id="menu-tagline">TWO DOTS. ONE MIND.</div>
           </div>
 
-          <div class="menu-card" id="menu-powerups-card">
-            <div class="menu-card-header" id="menu-powerups-header">POWER-UPS</div>
-            <div class="menu-power-row">
-              <div id="menu-ghost-icon"></div>
-              <span class="menu-power-name menu-power-ghost">GHOST</span>
-              <span class="menu-power-text">phase through a wall</span>
+          <div id="menu-actions">
+            <div id="menu-stats">
+              <span id="menu-best"></span>
+              <span id="menu-lvl"></span>
             </div>
-            <div class="menu-power-row">
-              <div id="menu-bullet-icon"></div>
-              <span class="menu-power-name menu-power-bullet">BULLET</span>
-              <span class="menu-power-text">slow time, 2 walls</span>
-            </div>
+            <button id="menu-play-btn" type="button">▶ PLAY</button>
+            <button id="menu-howto-btn" type="button">ⓘ HOW TO PLAY</button>
           </div>
         </div>
 
         <div id="menu-footer">
-          <div id="menu-stats">
-            <div id="menu-best"></div>
-            <div id="menu-lvl"></div>
-          </div>
-          <button id="menu-advanced-btn" class="menu-btn menu-btn-advanced" type="button">
-            ⚡ ADVANCED MODE
-          </button>
-          <div id="menu-buttons">
-            <button id="menu-leaderboard-btn" class="menu-btn" type="button">LEADERBOARD</button>
-            <button id="menu-mute-btn" class="menu-btn" type="button">SOUND ON</button>
-          </div>
-          <div id="menu-prompt">TAP TO PLAY</div>
+          <span id="menu-footer-label">CONTROL</span>
+          <span id="menu-footer-mode">TWO HANDS</span>
         </div>
       </div>
 
-      <!-- ═══ LEADERBOARD SCREEN ═══ -->
-      <div id="leaderboard-ui" class="ui-hidden">
-        <div id="lb-title">LEADERBOARD</div>
-        <div id="lb-tabs">
-          <button id="lb-tab-normal" class="lb-tab" type="button">NORMAL</button>
-          <button id="lb-tab-advanced" class="lb-tab" type="button">ADVANCED</button>
+      <!-- ═══ HOW TO PLAY SHEET (02) ═══ -->
+      <div id="howto-ui" class="ui-hidden">
+        <div id="howto-scrim"></div>
+        <div id="howto-sheet">
+          <div id="howto-grabber"></div>
+
+          <div class="sheet-section">
+            <div class="sheet-header">CONTROLS</div>
+            <div class="sheet-row">
+              <div class="sheet-glyph">
+                <span class="dot dot-cyan"></span>
+                <span class="glyph-bar"></span>
+                <span class="dot dot-magenta"></span>
+              </div>
+              <div class="sheet-text">thumbs apart → <b>spread</b></div>
+            </div>
+            <div class="sheet-row">
+              <div class="sheet-glyph sheet-glyph-tight">
+                <span class="dot dot-cyan"></span>
+                <span class="dot dot-magenta"></span>
+              </div>
+              <div class="sheet-text">thumbs together → <b>gather</b></div>
+            </div>
+            <div id="howto-survive">both dots must survive every wall</div>
+          </div>
+
+          <div class="sheet-divider"></div>
+
+          <div class="sheet-section">
+            <div class="sheet-header">POWER-UPS</div>
+            <div class="sheet-row">
+              <div class="sheet-glyph"><span id="howto-ghost-icon"></span></div>
+              <div class="sheet-text">
+                <b>GHOST</b>
+                <div class="sheet-sub">phase through one wall</div>
+              </div>
+            </div>
+            <div class="sheet-row">
+              <div class="sheet-glyph"><span id="howto-bullet-icon"></span></div>
+              <div class="sheet-text">
+                <b class="is-bullet">BULLET</b>
+                <div class="sheet-sub">slow time for 2 walls</div>
+              </div>
+            </div>
+          </div>
+
+          <button id="howto-got-it" class="btn-primary" type="button">GOT IT</button>
         </div>
-        <div id="lb-scope"></div>
+      </div>
+
+      <!-- ═══ SETTINGS SCREEN (03) ═══ -->
+      <div id="settings-ui" class="ui-hidden">
+        <div id="settings-title">SETTINGS</div>
+
+        <div class="settings-section">
+          <div class="settings-header">
+            <span>CONTROL</span>
+            <span class="settings-info">i</span>
+          </div>
+
+          <button id="ctrl-two" class="ctrl-card" type="button">
+            <span class="ctrl-radio"></span>
+            <span class="ctrl-body">
+              <span class="ctrl-name">TWO HANDS</span>
+              <span class="ctrl-desc">each thumb drives its own dot</span>
+            </span>
+            <span class="ctrl-chip">HARDER</span>
+          </button>
+
+          <button id="ctrl-one" class="ctrl-card" type="button">
+            <span class="ctrl-radio"></span>
+            <span class="ctrl-body">
+              <span class="ctrl-name">ONE HAND</span>
+              <span class="ctrl-desc">one thumb moves both dots together</span>
+            </span>
+          </button>
+
+          <div id="ctrl-tip">
+            Two hands gives you independent control — more precision, but far
+            less forgiving. Scores from both setups share one leaderboard.
+          </div>
+        </div>
+
+        <div class="sheet-divider"></div>
+
+        <div class="settings-section">
+          <div class="settings-header"><span>AUDIO</span></div>
+          <button id="set-sound" class="toggle-row" type="button">
+            <span class="toggle-label">SOUND</span>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </button>
+          <button id="set-haptics" class="toggle-row" type="button">
+            <span class="toggle-label">HAPTICS</span>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </button>
+        </div>
+
+        <div class="flex-spacer"></div>
+        <button id="settings-back" class="btn-ghost" type="button">BACK</button>
+      </div>
+
+      <!-- ═══ LEADERBOARD SCREEN (06) ═══ -->
+      <div id="leaderboard-ui" class="ui-hidden">
+        <div id="lb-head">
+          <div id="lb-title">LEADERBOARD</div>
+          <div id="lb-scope"></div>
+        </div>
         <div id="lb-you">
           <span id="lb-you-label">YOU</span>
           <input id="lb-name-input" type="text" maxlength="14" placeholder="enter name"
@@ -96,7 +191,8 @@
         </div>
         <div id="lb-list"></div>
         <div id="lb-status"></div>
-        <button id="lb-back" class="menu-btn" type="button">BACK</button>
+        <div class="flex-spacer"></div>
+        <button id="lb-back" class="btn-ghost" type="button">BACK</button>
       </div>
 
       <!-- ═══ GAME HUD ═══ -->
@@ -141,17 +237,23 @@
       <div id="ghost-alert" class="ui-hidden">CAN PASS THROUGH WALL</div>
       <div id="bullet-alert" class="ui-hidden">BULLET TIME!!!</div>
 
-      <!-- ═══ GAME OVER ═══ -->
+      <!-- ═══ GAME OVER (05) ═══ -->
       <div id="gameover-ui" class="ui-hidden">
         <div id="go-panel">
-          <div id="go-title">GAME OVER</div>
-          <div id="go-score"></div>
+          <div id="go-head">
+            <div id="go-title">GAME OVER</div>
+            <div id="go-score"></div>
+            <div id="go-score-label">SCORE</div>
+          </div>
           <div id="go-stats">
             <div id="go-best"></div>
             <div id="go-combo"></div>
             <div id="go-level"></div>
           </div>
-          <div id="go-retry">TAP TO RETRY</div>
+          <div id="go-actions">
+            <button id="go-retry" class="btn-primary" type="button">TRY AGAIN</button>
+            <button id="go-home" class="btn-ghost" type="button">BACK TO HOME</button>
+          </div>
         </div>
       </div>
 

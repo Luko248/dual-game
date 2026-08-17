@@ -156,6 +156,10 @@ export class GameScene extends Phaser.Scene {
     /* show HUD overlay */
     uiManager.showHUD(this.advanced);
 
+    /* game-over card actions (re-bound each run — the scene is recreated) */
+    uiManager.onRetry      = () => this.restart();
+    uiManager.onBackToHome = () => this.backToHome();
+
     /* start procedural background music (idempotent across restarts) */
     music.setLevel(1);
     music.start();
@@ -421,8 +425,9 @@ export class GameScene extends Phaser.Scene {
       localStorage.setItem(HI_LEVEL_KEY, levelReached.toString());
     }
 
-    /* submit to the per-mode leaderboard (keeps only the best, keyed by UID) */
-    leaderboard.submit(this.score, levelReached, this.advanced ? 'advanced' : 'normal');
+    /* submit to the shared leaderboard (keeps only the best, keyed by UID —
+       both control setups rank on the same board) */
+    leaderboard.submit(this.score, levelReached);
 
     /* burst particles */
     const dot = which === 'left' ? this.leftDot : this.rightDot;
@@ -480,15 +485,28 @@ export class GameScene extends Phaser.Scene {
       );
     }
 
-    /* retry prompt — shown after 1000ms */
+    /* action buttons — revealed after 1000ms */
     if (this.deathTimer > 1000 && !this.retryShown) {
       this.retryShown = true;
       uiManager.showRetry();
     }
 
-    /* restart — keep the same mode */
-    if (this.deathTimer > 1000 && this.input_.anyPressed()) {
-      this.scene.start('Game', { advanced: this.advanced });
+    /* Keyboard-only restart. The pointer path is deliberately gone: the
+       game-over card now has real TRY AGAIN / BACK TO HOME buttons, and a
+       tap on either also registers as a Phaser pointerdown — polling
+       `anyPressed()` here would restart the run instead of going home. */
+    if (this.deathTimer > 1000 && this.input_.anyKeyPressed()) {
+      this.restart();
     }
+  }
+
+  private restart(): void {
+    uiManager.hideGameOver();
+    this.scene.start('Game', { advanced: this.advanced });
+  }
+
+  private backToHome(): void {
+    uiManager.hideGameOver();
+    this.scene.start('Menu');
   }
 }

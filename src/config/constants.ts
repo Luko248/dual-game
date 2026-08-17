@@ -95,11 +95,19 @@ export const INTRO_SPEED_MULT = 0.5;    // speed multiplier during intro
 
 /* Advanced mode — each thumb steers its own dot independently (no mirroring).
    Harder by design, so it also runs a touch faster and decouples the two
-   lanes' gaps further. */
+   lanes' gaps further.
+
+   UI NAMING: this internal `advanced` flag is surfaced to the player as the
+   CONTROL setting — `advanced = true` is "TWO HANDS" (each thumb its own dot,
+   flagged HARDER), `advanced = false` is "ONE HAND" (mirrored spread/gather,
+   one thumb drives both dots). The flag name is kept because it threads
+   through GameScene / InputManager / ObstaclePool; only the labels differ. */
 export const ADVANCED_SPEED_MULT  = 1.2;   // overall scroll speed multiplier
 export const ADVANCED_OFFSET_MULT = 2.4;   // widens the left/right gap divergence
 
 /* Storage */
 export const HI_SCORE_KEY = 'dual_hi';
 export const HI_LEVEL_KEY = 'dual_lvl';
+/** Persisted CONTROL setting — '1' = TWO HANDS (advanced), '0' = ONE HAND. */
+export const CONTROL_KEY  = 'dual_control';
 export const TOTAL_LEVELS  = 10; // number of themes

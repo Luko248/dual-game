@@ -1,5 +1,5 @@
 import { THEMES, TOTAL_LEVELS, MAX_COMBO_MULTI } from '../config/constants';
-import type { LbRow, LbMode } from './Leaderboard';
+import type { LbRow } from './Leaderboard';
 
 /* Virtual canvas size — matches Phaser's 400×640 space */
 const VW = 400;
@@ -53,20 +53,46 @@ class UIManager {
   private lbNameInput!: HTMLInputElement;
   private lbList!: HTMLElement;
   private lbStatus!: HTMLElement;
-  private lbTabNormal!: HTMLElement;
-  private lbTabAdvanced!: HTMLElement;
-  private menuLeaderboardBtn!: HTMLElement;
   private lbBack!: HTMLElement;
-  private menuMuteBtn!: HTMLElement;
-  private menuAdvancedBtn!: HTMLElement;
 
-  /* leaderboard + audio + mode callbacks (wired by the menu scene) */
+  /* menu chrome */
+  private menuLeaderboardBtn!: HTMLElement;
+  private menuMuteBtn!: HTMLElement;
+  private menuSettingsBtn!: HTMLElement;
+  private menuPlayBtn!: HTMLElement;
+  private menuHowtoBtn!: HTMLElement;
+  private menuStats!: HTMLElement;
+  private menuFooterMode!: HTMLElement;
+
+  /* how-to sheet */
+  private howtoUI!: HTMLElement;
+  private howtoScrim!: HTMLElement;
+  private howtoGotIt!: HTMLElement;
+
+  /* settings */
+  private settingsUI!: HTMLElement;
+  private ctrlTwo!: HTMLElement;
+  private ctrlOne!: HTMLElement;
+  private setSound!: HTMLElement;
+  private setHaptics!: HTMLElement;
+  private settingsBack!: HTMLElement;
+
+  /* navigation + settings callbacks (wired by the menu scene) */
   onShowLeaderboard?: () => void;
   onHideLeaderboard?: () => void;
   onNameChange?: (name: string) => void;
   onToggleMute?: () => void;
-  onStartAdvanced?: () => void;
-  onSelectMode?: (mode: LbMode) => void;
+  onToggleHaptics?: () => void;
+  onPlay?: () => void;
+  onShowHowto?: () => void;
+  onHideHowto?: () => void;
+  onShowSettings?: () => void;
+  onHideSettings?: () => void;
+  /** true = TWO HANDS (advanced), false = ONE HAND */
+  onSelectControl?: (twoHands: boolean) => void;
+  /* game-over actions (wired by the game scene) */
+  onRetry?: () => void;
+  onBackToHome?: () => void;
 
   /* game over */
   private gameoverUI!: HTMLElement;
@@ -75,7 +101,9 @@ class UIManager {
   private goBest!: HTMLElement;
   private goCombo!: HTMLElement;
   private goLevel!: HTMLElement;
+  private goActions!: HTMLElement;
   private goRetry!: HTMLElement;
+  private goHome!: HTMLElement;
 
   init(): void {
     this.inner         = document.getElementById('ui-inner')!;
@@ -103,27 +131,55 @@ class UIManager {
     this.lbNameInput   = document.getElementById('lb-name-input') as HTMLInputElement;
     this.lbList        = document.getElementById('lb-list')!;
     this.lbStatus      = document.getElementById('lb-status')!;
-    this.lbTabNormal   = document.getElementById('lb-tab-normal')!;
-    this.lbTabAdvanced = document.getElementById('lb-tab-advanced')!;
-    this.menuLeaderboardBtn = document.getElementById('menu-leaderboard-btn')!;
-    this.menuMuteBtn   = document.getElementById('menu-mute-btn')!;
-    this.menuAdvancedBtn = document.getElementById('menu-advanced-btn')!;
     this.lbBack        = document.getElementById('lb-back')!;
+    this.menuLeaderboardBtn = document.getElementById('menu-leaderboard-btn')!;
+    this.menuMuteBtn     = document.getElementById('menu-mute-btn')!;
+    this.menuSettingsBtn = document.getElementById('menu-settings-btn')!;
+    this.menuPlayBtn     = document.getElementById('menu-play-btn')!;
+    this.menuHowtoBtn    = document.getElementById('menu-howto-btn')!;
+    this.menuStats       = document.getElementById('menu-stats')!;
+    this.menuFooterMode  = document.getElementById('menu-footer-mode')!;
+    this.howtoUI       = document.getElementById('howto-ui')!;
+    this.howtoScrim    = document.getElementById('howto-scrim')!;
+    this.howtoGotIt    = document.getElementById('howto-got-it')!;
+    this.settingsUI    = document.getElementById('settings-ui')!;
+    this.ctrlTwo       = document.getElementById('ctrl-two')!;
+    this.ctrlOne       = document.getElementById('ctrl-one')!;
+    this.setSound      = document.getElementById('set-sound')!;
+    this.setHaptics    = document.getElementById('set-haptics')!;
+    this.settingsBack  = document.getElementById('settings-back')!;
     this.gameoverUI    = document.getElementById('gameover-ui')!;
     this.goTitle       = document.getElementById('go-title')!;
     this.goScore       = document.getElementById('go-score')!;
     this.goBest        = document.getElementById('go-best')!;
     this.goCombo       = document.getElementById('go-combo')!;
     this.goLevel       = document.getElementById('go-level')!;
+    this.goActions     = document.getElementById('go-actions')!;
     this.goRetry       = document.getElementById('go-retry')!;
+    this.goHome        = document.getElementById('go-home')!;
 
-    /* leaderboard navigation + name editing */
+    /* menu navigation */
+    this.menuPlayBtn.addEventListener('click', () => this.onPlay?.());
+    this.menuHowtoBtn.addEventListener('click', () => this.onShowHowto?.());
+    this.menuSettingsBtn.addEventListener('click', () => this.onShowSettings?.());
     this.menuLeaderboardBtn.addEventListener('click', () => this.onShowLeaderboard?.());
     this.menuMuteBtn.addEventListener('click', () => this.onToggleMute?.());
-    this.menuAdvancedBtn.addEventListener('click', () => this.onStartAdvanced?.());
     this.lbBack.addEventListener('click', () => this.onHideLeaderboard?.());
-    this.lbTabNormal.addEventListener('click', () => this.onSelectMode?.('normal'));
-    this.lbTabAdvanced.addEventListener('click', () => this.onSelectMode?.('advanced'));
+
+    /* how-to sheet — tapping the scrim dismisses it, same as GOT IT */
+    this.howtoGotIt.addEventListener('click', () => this.onHideHowto?.());
+    this.howtoScrim.addEventListener('click', () => this.onHideHowto?.());
+
+    /* settings */
+    this.ctrlTwo.addEventListener('click', () => this.onSelectControl?.(true));
+    this.ctrlOne.addEventListener('click', () => this.onSelectControl?.(false));
+    this.setSound.addEventListener('click', () => this.onToggleMute?.());
+    this.setHaptics.addEventListener('click', () => this.onToggleHaptics?.());
+    this.settingsBack.addEventListener('click', () => this.onHideSettings?.());
+
+    /* game over */
+    this.goRetry.addEventListener('click', () => this.onRetry?.());
+    this.goHome.addEventListener('click', () => this.onBackToHome?.());
     /* commit name on Enter / blur */
     this.lbNameInput.addEventListener('change', () => {
       this.onNameChange?.(this.lbNameInput.value);
@@ -150,6 +206,8 @@ class UIManager {
     this.ghostAlert.classList.add('ui-hidden');
     this.bulletAlert.classList.add('ui-hidden');
     this.leaderboardUI.classList.add('ui-hidden');
+    this.settingsUI.classList.add('ui-hidden');
+    this.howtoUI.classList.add('ui-hidden');
     this.gameoverUI.classList.add('ui-hidden');
   }
 
@@ -159,8 +217,11 @@ class UIManager {
 
   showMenu(hiScore: number, hiLevel: number): void {
     this.hideAll();
-    this.menuBest.textContent = hiScore > 0 ? 'BEST:\u00a0' + hiScore : '';
-    this.menuLvl.textContent  = hiLevel > 0 ? 'LVL\u00a0' + hiLevel + '\u00a0/\u00a0' + TOTAL_LEVELS : '';
+    this.menuBest.textContent = hiScore > 0 ? 'BEST\u00a0' + hiScore : '';
+    this.menuLvl.textContent  = hiLevel > 0 ? '\u00b7\u00a0LVL\u00a0' + hiLevel + '/' + TOTAL_LEVELS : '';
+    /* keep the pill's footprint but hide it until there's something to show,
+       so the centre stack doesn't jump between first and later sessions */
+    this.menuStats.classList.toggle('is-empty', hiScore <= 0);
     this.menuUI.classList.remove('ui-hidden');
   }
 
@@ -168,9 +229,43 @@ class UIManager {
     this.menuUI.classList.add('ui-hidden');
   }
 
+  /** Sound state, reflected on both the home icon and the settings toggle. */
   setMuteLabel(muted: boolean): void {
-    this.menuMuteBtn.textContent = muted ? 'SOUND OFF' : 'SOUND ON';
     this.menuMuteBtn.classList.toggle('is-muted', muted);
+    this.setSound.classList.toggle('is-on', !muted);
+  }
+
+  setHapticsLabel(muted: boolean): void {
+    this.setHaptics.classList.toggle('is-on', !muted);
+  }
+
+  /** Footer line on the home screen + the settings radio selection. */
+  setControlMode(twoHands: boolean): void {
+    this.menuFooterMode.textContent = twoHands ? 'TWO HANDS' : 'ONE HAND';
+    this.ctrlTwo.classList.toggle('is-active', twoHands);
+    this.ctrlOne.classList.toggle('is-active', !twoHands);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  HOW TO PLAY SHEET                                                  */
+  /*  Layered over the menu \u2014 the menu stays visible behind the scrim.   */
+  /* ------------------------------------------------------------------ */
+
+  showHowto(): void {
+    this.howtoUI.classList.remove('ui-hidden');
+  }
+
+  hideHowto(): void {
+    this.howtoUI.classList.add('ui-hidden');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  SETTINGS                                                           */
+  /* ------------------------------------------------------------------ */
+
+  showSettings(): void {
+    this.hideAll();
+    this.settingsUI.classList.remove('ui-hidden');
   }
 
   /* ------------------------------------------------------------------ */
@@ -326,22 +421,13 @@ class UIManager {
   /*  LEADERBOARD                                                         */
   /* ------------------------------------------------------------------ */
 
-  showLeaderboard(name: string, global: boolean, mode: LbMode): void {
+  showLeaderboard(name: string, global: boolean): void {
     this.hideAll();
     this.lbNameInput.value = name;
     this.lbScope.textContent = global ? 'GLOBAL' : 'THIS DEVICE';
-    this.setLeaderboardMode(mode);
     this.lbList.innerHTML = '';
     this.lbStatus.textContent = 'Loading…';
     this.leaderboardUI.classList.remove('ui-hidden');
-  }
-
-  /** Highlight the active mode tab and show a loading state. */
-  setLeaderboardMode(mode: LbMode): void {
-    this.lbTabNormal.classList.toggle('is-active', mode === 'normal');
-    this.lbTabAdvanced.classList.toggle('is-active', mode === 'advanced');
-    this.lbList.innerHTML = '';
-    this.lbStatus.textContent = 'Loading…';
   }
 
   renderLeaderboard(rows: LbRow[], global: boolean): void {
@@ -362,7 +448,7 @@ class UIManager {
 
       const rank = document.createElement('span');
       rank.className = 'lb-rank';
-      rank.textContent = '#' + r.rank;
+      rank.textContent = r.rank.toString();
 
       const nm = document.createElement('span');
       nm.className = 'lb-name';
@@ -395,18 +481,25 @@ class UIManager {
     maxCombo: number,
     currentTheme: number
   ): void {
-    this.goScore.textContent = 'Score:\u00a0' + score;
+    this.goScore.textContent = score.toString();
 
-    if (isNewBest) {
-      this.goBest.textContent = 'NEW\u00a0BEST:\u00a0' + hiScore;
-      this.goBest.classList.add('ui-new-best');
-    } else {
-      this.goBest.textContent = 'Best:\u00a0' + hiScore;
-      this.goBest.classList.remove('ui-new-best');
-    }
+    /* each stat row renders as "LABEL <spacer> value" (flex space-between) */
+    const setRow = (el: HTMLElement, key: string, value: string) => {
+      el.innerHTML = '';
+      const k = document.createElement('span');
+      k.className = 'go-k';
+      k.textContent = key;
+      const v = document.createElement('span');
+      v.className = 'go-v';
+      v.textContent = value;
+      el.append(k, v);
+    };
+
+    setRow(this.goBest, isNewBest ? 'NEW BEST' : 'BEST', hiScore.toString());
+    this.goBest.classList.toggle('ui-new-best', isNewBest);
 
     if (maxCombo > 2) {
-      this.goCombo.textContent = 'Max\u00a0combo:\u00a0\u00d7' + Math.min(maxCombo, MAX_COMBO_MULTI);
+      setRow(this.goCombo, 'MAX COMBO', '\u00d7' + Math.min(maxCombo, MAX_COMBO_MULTI));
       this.goCombo.style.display = '';
     } else {
       this.goCombo.style.display = 'none';
@@ -414,7 +507,7 @@ class UIManager {
 
     if (currentTheme > 0) {
       const tName = THEMES[currentTheme % THEMES.length].name.toUpperCase();
-      this.goLevel.textContent = tName + '\u00a0\u2014\u00a0Lv.\u00a0' + (currentTheme + 1) + '\u00a0/\u00a0' + TOTAL_LEVELS;
+      setRow(this.goLevel, tName, 'LV\u00a0' + (currentTheme + 1) + '/' + TOTAL_LEVELS);
       this.goLevel.style.display = '';
     } else {
       this.goLevel.style.display = 'none';
@@ -427,7 +520,9 @@ class UIManager {
       el.classList.remove('ui-fadein');
     });
 
-    this.goRetry.style.display = 'none';
+    /* buttons stay hidden until showRetry() — a mistap in the first second
+       after dying would otherwise restart the run instantly */
+    this.goActions.style.visibility = 'hidden';
     this.gameoverUI.classList.remove('ui-hidden');
 
     const delays = [0, 80, 160, 240, 320];
@@ -441,12 +536,12 @@ class UIManager {
   }
 
   showRetry(): void {
-    this.goRetry.style.display = '';
+    this.goActions.style.visibility = '';
   }
 
   hideGameOver(): void {
     this.gameoverUI.classList.add('ui-hidden');
-    this.goRetry.style.display = 'none';
+    this.goActions.style.visibility = 'hidden';
   }
 }
 

@@ -13,13 +13,14 @@
  *                       PlayFab's free tier covers anonymous device login +
  *                       leaderboards, so there is no paid API involved.
  *
- * Per-mode boards: Normal and Advanced are ranked separately (different local
- * keys / different PlayFab statistics) so the harder mode isn't unfairly mixed
- * with the easier one. The player's name is shared across both boards.
+ * ONE SHARED BOARD: both control setups (TWO HANDS / ONE HAND) rank on the same
+ * leaderboard — a device owns exactly one row, its best score whichever way it
+ * was played. This replaced the earlier split Normal/Advanced boards; the
+ * migration in `LocalProvider.load()` folds any pre-split rows together.
  *
  * Identity & anti-overwrite ("aby si ľudia neprepisovali skóre"):
  *   - Every device gets one stable UID (localStorage). All writes are keyed by
- *     that UID, so a device owns exactly one row per board — no duplicates.
+ *     that UID, so a device owns exactly one row — no duplicates.
  *   - Only a *higher* score is ever kept. Locally we max() on submit; on
  *     PlayFab the statistic must be configured with aggregation = Maximum so
  *     the server itself rejects any lower value.
@@ -29,13 +30,10 @@
  * "aspoň trochu secure" tier: stable identity + server-side max aggregation.
  */
 
-export type LbMode = 'normal' | 'advanced';
-
-/** PlayFab statistic name per mode (each is its own leaderboard). */
-const STAT_NAMES: Record<LbMode, string> = {
-  normal:   'HighScore',
-  advanced: 'HighScoreAdv'
-};
+/** The single PlayFab statistic backing the board.
+ *  (The old split board also wrote `HighScoreAdv`; that statistic is no longer
+ *  read or written — see `.env.example` if you need to reconcile old scores.) */
+const STAT_NAME = 'HighScore';
 
 const UID_KEY   = 'dual_uid';
 const NAME_KEY  = 'dual_name';
@@ -54,26 +52,46 @@ export interface LbRow {
 interface Provider {
   /** true if the board is shared across devices */
   readonly global: boolean;
-  submit(uid: string, name: string, score: number, level: number, mode: LbMode): Promise<void>;
+  submit(uid: string, name: string, score: number, level: number): Promise<void>;
   setName(uid: string, name: string): Promise<void>;
-  top(count: number, uid: string, mode: LbMode): Promise<LbRow[]>;
+  top(count: number, uid: string): Promise<LbRow[]>;
 }
 
 /* ------------------------------------------------------------------ */
 /*  LOCAL PROVIDER                                                     */
 /* ------------------------------------------------------------------ */
 
-interface LocalEntry { uid: string; name: string; score: number; level: number; mode: LbMode; }
+interface LocalEntry { uid: string; name: string; score: number; level: number; }
+/** Shape written by the older split-board build (kept only for migration). */
+interface LegacyEntry extends LocalEntry { mode?: string; }
 
 class LocalProvider implements Provider {
   readonly global = false;
 
+  /**
+   * Reads the board, folding any rows left over from the split
+   * Normal/Advanced era into one row per device: same UID → keep the higher
+   * score (and the level that went with it). Runs on every load and is a
+   * no-op once the stored data has no duplicate UIDs, so it needs no
+   * version flag.
+   */
   private load(): LocalEntry[] {
     try {
       const raw = localStorage.getItem(LOCAL_KEY);
-      const arr = raw ? JSON.parse(raw) as LocalEntry[] : [];
-      /* migrate pre-mode entries → normal */
-      return arr.map(e => ({ ...e, mode: e.mode ?? 'normal' }));
+      const arr = raw ? JSON.parse(raw) as LegacyEntry[] : [];
+
+      const byUid = new Map<string, LocalEntry>();
+      for (const e of arr) {
+        const prev = byUid.get(e.uid);
+        if (!prev) {
+          byUid.set(e.uid, { uid: e.uid, name: e.name, score: e.score, level: e.level });
+        } else if (e.score > prev.score) {
+          prev.score = e.score;
+          prev.level = e.level;
+          prev.name  = e.name;
+        }
+      }
+      return [...byUid.values()];
     } catch {
       return [];
     }
@@ -83,9 +101,9 @@ class LocalProvider implements Provider {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(entries));
   }
 
-  async submit(uid: string, name: string, score: number, level: number, mode: LbMode): Promise<void> {
+  async submit(uid: string, name: string, score: number, level: number): Promise<void> {
     const all = this.load();
-    const existing = all.find(e => e.uid === uid && e.mode === mode);
+    const existing = all.find(e => e.uid === uid);
     if (existing) {
       existing.name = name;
       /* keep only the best — never overwrite with a lower score */
@@ -94,7 +112,7 @@ class LocalProvider implements Provider {
         existing.level = level;
       }
     } else {
-      all.push({ uid, name, score, level, mode });
+      all.push({ uid, name, score, level });
     }
     this.save(all);
   }
@@ -108,9 +126,8 @@ class LocalProvider implements Provider {
     if (changed) this.save(all);
   }
 
-  async top(count: number, uid: string, mode: LbMode): Promise<LbRow[]> {
+  async top(count: number, uid: string): Promise<LbRow[]> {
     return this.load()
-      .filter(e => e.mode === mode)
       .sort((a, b) => b.score - a.score)
       .slice(0, count)
       .map((e, i) => ({ rank: i + 1, name: e.name, score: e.score, you: e.uid === uid }));
@@ -171,12 +188,12 @@ class PlayFabProvider implements Provider {
     }
   }
 
-  async submit(uid: string, name: string, score: number, _level: number, mode: LbMode): Promise<void> {
+  async submit(uid: string, name: string, score: number, _level: number): Promise<void> {
     const s = await this.login(uid);
     await this.pushName(name, s.ticket);
     /* Server keeps the max when the statistic's aggregation = Maximum. */
     await this.post('/Client/UpdatePlayerStatistics', {
-      Statistics: [{ StatisticName: STAT_NAMES[mode], Value: score }]
+      Statistics: [{ StatisticName: STAT_NAME, Value: score }]
     }, s.ticket);
   }
 
@@ -185,10 +202,10 @@ class PlayFabProvider implements Provider {
     await this.pushName(name, s.ticket);
   }
 
-  async top(count: number, uid: string, mode: LbMode): Promise<LbRow[]> {
+  async top(count: number, uid: string): Promise<LbRow[]> {
     const s = await this.login(uid);
     const d = await this.post('/Client/GetLeaderboard', {
-      StatisticName: STAT_NAMES[mode],
+      StatisticName: STAT_NAME,
       StartPosition: 0,
       MaxResultsCount: Math.min(count, 100)
     }, s.ticket);
@@ -254,17 +271,17 @@ class Leaderboard {
     }
   }
 
-  async submit(score: number, level: number, mode: LbMode): Promise<void> {
+  async submit(score: number, level: number): Promise<void> {
     if (score <= 0) return;
     try {
-      await this.provider.submit(this.uid, this.displayName(), score, level, mode);
+      await this.provider.submit(this.uid, this.displayName(), score, level);
     } catch (e) {
       console.warn('[leaderboard] submit failed', e);
     }
   }
 
-  top(count: number, mode: LbMode): Promise<LbRow[]> {
-    return this.provider.top(count, this.uid, mode);
+  top(count: number): Promise<LbRow[]> {
+    return this.provider.top(count, this.uid);
   }
 }
 
