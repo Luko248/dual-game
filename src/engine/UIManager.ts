@@ -462,7 +462,9 @@ class UIManager {
       this.lbList.appendChild(row);
     }
 
-    this.lbStatus.textContent = global ? '' : 'Local board — set a PlayFab Title ID to go global';
+    /* Player-facing copy only — the PlayFab setup hint that used to live here
+       is a developer concern and was visible in App Store screenshots. */
+    this.lbStatus.textContent = global ? '' : 'Scores saved on this device';
   }
 
   setLeaderboardError(msg: string): void {
